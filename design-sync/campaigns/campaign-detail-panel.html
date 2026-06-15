@@ -1,0 +1,157 @@
+<!-- @dsCard group="Campaigns" -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chiến dịch – Chi tiết (Modal)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  :root {
+    --background: #f0f4f9;
+    --foreground: #0d1b2a;
+    --card: #ffffff;
+    --primary: #004b9a;
+    --secondary: #e8f0fb;
+    --muted: #edf1f7;
+    --muted-foreground: #6b7a95;
+    --accent: #f97316;
+    --border: rgba(0, 75, 154, 0.12);
+    --acb-blue: #004b9a;
+    --acb-sidebar: #002d6e;
+  }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--background); color: var(--foreground); }
+</style>
+</head>
+<body class="p-5 flex items-center justify-center" style="min-height: 100vh">
+  <div class="rounded-2xl overflow-hidden shadow-2xl flex flex-col" style="width: min(640px, 95vw); background: var(--background); max-height: 92vh;">
+
+    <!-- Header -->
+    <div class="px-6 pt-5 pb-4 flex-shrink-0" style="background: linear-gradient(135deg, var(--acb-sidebar) 0%, var(--acb-blue) 100%)">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <h2 class="text-white text-base font-semibold">Tháng 6 – Vay nhà lãi suất ưu đãi</h2>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:#dcfce7; color:#16a34a">Đang chạy</span>
+          </div>
+          <p class="text-white/70 text-xs">Kênh: Email + SMS · 01/06/2026 – 30/06/2026</p>
+        </div>
+        <button class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(255,255,255,0.15); color: white">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+      <!-- Time progress -->
+      <div class="mt-4">
+        <div class="flex items-center justify-between text-xs text-white/70 mb-1">
+          <span>Tiến độ thời gian</span>
+          <span>11 / 30 ngày</span>
+        </div>
+        <div class="h-1.5 rounded-full" style="background: rgba(255,255,255,0.2)">
+          <div class="h-full rounded-full" style="width:37%; background:#f97316"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="flex-1 p-6 space-y-4 overflow-y-auto">
+
+      <!-- KPI blocks -->
+      <div class="grid grid-cols-3 gap-3">
+        <div class="p-3 rounded-xl border" style="background:#fff; border-color:var(--border)">
+          <div class="flex items-center gap-1.5 mb-1">
+            <i data-lucide="users" class="w-3.5 h-3.5" style="color:#004b9a"></i>
+            <span class="text-xs" style="color:var(--muted-foreground)">Leads thu được</span>
+          </div>
+          <p class="text-xl font-bold" style="color:#004b9a">128</p>
+          <p class="text-xs mt-0.5" style="color:#16a34a">/ 200 mục tiêu · 64%</p>
+        </div>
+        <div class="p-3 rounded-xl border" style="background:#fff; border-color:var(--border)">
+          <div class="flex items-center gap-1.5 mb-1">
+            <i data-lucide="user-check" class="w-3.5 h-3.5" style="color:#16a34a"></i>
+            <span class="text-xs" style="color:var(--muted-foreground)">Chuyển đổi</span>
+          </div>
+          <p class="text-xl font-bold" style="color:#16a34a">24</p>
+          <p class="text-xs mt-0.5" style="color:#16a34a">/ 30 mục tiêu · 80%</p>
+        </div>
+        <div class="p-3 rounded-xl border" style="background:#fff; border-color:var(--border)">
+          <div class="flex items-center gap-1.5 mb-1">
+            <i data-lucide="dollar-sign" class="w-3.5 h-3.5" style="color:#d97706"></i>
+            <span class="text-xs" style="color:var(--muted-foreground)">Doanh số mới</span>
+          </div>
+          <p class="text-xl font-bold" style="color:#d97706">42 tỷ</p>
+          <p class="text-xs mt-0.5" style="color:#16a34a">/ 60 tỷ mục tiêu · 70%</p>
+        </div>
+      </div>
+
+      <!-- Conversion rate + budget -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="p-4 rounded-xl border" style="background:#fff; border-color:var(--border)">
+          <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--muted-foreground)">Tỷ lệ chuyển đổi</p>
+          <div class="flex items-end gap-2">
+            <span class="text-2xl font-bold" style="color:#16a34a">18.8%</span>
+            <span class="text-xs mb-1" style="color:#16a34a">↑ 2.4% so với tuần trước</span>
+          </div>
+          <div class="h-1.5 rounded-full mt-2" style="background:#f1f5f9">
+            <div class="h-full rounded-full" style="width:18.8%; background:#16a34a"></div>
+          </div>
+        </div>
+        <div class="p-4 rounded-xl border" style="background:#fff; border-color:var(--border)">
+          <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--muted-foreground)">Ngân sách</p>
+          <div class="flex items-end gap-2">
+            <span class="text-2xl font-bold" style="color:#004b9a">320 tr</span>
+            <span class="text-xs mb-1" style="color:var(--muted-foreground)">/ 500 tr</span>
+          </div>
+          <div class="h-1.5 rounded-full mt-2" style="background:#f1f5f9">
+            <div class="h-full rounded-full" style="width:64%; background:#004b9a"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leads list -->
+      <div class="rounded-xl border" style="background:#fff; border-color:var(--border)">
+        <div class="flex items-center justify-between px-4 py-2.5 border-b" style="border-color:var(--border)">
+          <p class="text-xs font-semibold uppercase tracking-wide" style="color:var(--muted-foreground)">Leads từ chiến dịch này (128)</p>
+          <button class="text-xs flex items-center gap-0.5" style="color:#004b9a">Xem tất cả <i data-lucide="chevron-right" class="w-3 h-3"></i></button>
+        </div>
+        <div class="divide-y" style="border-color:var(--border)">
+          <div class="flex items-center gap-3 px-4 py-2.5">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style="background:#7c3aed">N</div>
+            <span class="text-xs flex-1 truncate">Nguyễn Văn Phúc</span>
+            <span class="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full" style="background:#16a34a15; color:#16a34a">
+              <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> AI 91
+            </span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:#7c3aed15; color:#7c3aed">Đề xuất</span>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-2.5">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style="background:#0891b2">L</div>
+            <span class="text-xs flex-1 truncate">Lê Thị Nga</span>
+            <span class="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full" style="background:#d9770615; color:#d97706">
+              <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> AI 72
+            </span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:#0891b215; color:#0891b2">Quan tâm</span>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-2.5">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style="background:#16a34a">P</div>
+            <span class="text-xs flex-1 truncate">Phạm Quốc Anh</span>
+            <span class="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full" style="background:#16a34a15; color:#16a34a">
+              <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> AI 85
+            </span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:#16a34a15; color:#16a34a">Chốt</span>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-2.5">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style="background:#6b7280">H</div>
+            <span class="text-xs flex-1 truncate">Hoàng Minh Tú</span>
+            <span class="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full" style="background:#6b728015; color:#6b7280">
+              <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> AI 54
+            </span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background:#6b728015; color:#6b7280">Tiếp cận</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<script>lucide.createIcons();</script>
+</body>
+</html>

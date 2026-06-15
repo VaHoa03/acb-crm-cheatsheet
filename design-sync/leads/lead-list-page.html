@@ -1,0 +1,353 @@
+<!-- @dsCard group="Leads" -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lead – Trang quản lý Lead</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  :root {
+    --background: #f0f4f9;
+    --foreground: #0d1b2a;
+    --card: #ffffff;
+    --primary: #004b9a;
+    --secondary: #e8f0fb;
+    --muted: #edf1f7;
+    --muted-foreground: #6b7a95;
+    --accent: #f97316;
+    --border: rgba(0, 75, 154, 0.12);
+  }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--background); color: var(--foreground); }
+</style>
+</head>
+<body class="p-5">
+  <div class="p-5 pb-16 max-w-[1280px] mx-auto" style="background:var(--background)">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h1 class="text-lg flex items-center gap-2" style="color:#0d1b2a">
+          <i data-lucide="target" style="color:#d97706" class="w-5 h-5"></i>
+          Lead
+        </h1>
+        <p class="text-xs mt-0.5" style="color:#6b7a95">Quản lý pipeline xử lý lead theo AI Score</p>
+      </div>
+      <button class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white"
+        style="background:linear-gradient(135deg, #92400e 0%, #d97706 100%)">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        Thêm Lead
+      </button>
+    </div>
+
+    <!-- New leads alert -->
+    <div class="flex items-center gap-3 mb-5 p-3.5 rounded-xl border" style="background:#fef3c7; border-color:#fde68a">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#fde68a">
+        <i data-lucide="bell" class="w-4 h-4" style="color:#92400e"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold" style="color:#92400e">8 leads mới được giao cho bạn</p>
+        <p class="text-xs" style="color:#92400e">Trong đó có 3 lead AI Score ≥85 cần ưu tiên xử lý hôm nay</p>
+      </div>
+      <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-white flex-shrink-0" style="background:#92400e">
+        Xem ngay
+      </button>
+      <button class="p-1 rounded flex-shrink-0">
+        <i data-lucide="x" class="w-3.5 h-3.5" style="color:#92400e"></i>
+      </button>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="grid grid-cols-4 gap-3 mb-5">
+      <div class="p-3 rounded-xl border" style="background:#fff; border-color:rgba(0,75,154,0.1)">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style="background:#e8f0fb">
+          <i data-lucide="users" class="w-4 h-4" style="color:#004b9a"></i>
+        </div>
+        <p class="text-2xl font-bold" style="color:#004b9a">8</p>
+        <p class="text-xs" style="color:#6b7a95">Tổng Lead</p>
+      </div>
+      <div class="p-3 rounded-xl border" style="background:#fff; border-color:rgba(0,75,154,0.1)">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style="background:#fef2f2">
+          <i data-lucide="flame" class="w-4 h-4" style="color:#dc2626"></i>
+        </div>
+        <p class="text-2xl font-bold" style="color:#dc2626">3</p>
+        <p class="text-xs" style="color:#6b7a95">Lead Hot (AI ≥85)</p>
+      </div>
+      <div class="p-3 rounded-xl border" style="background:#fff; border-color:rgba(0,75,154,0.1)">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style="background:#fef3c7">
+          <i data-lucide="trending-up" class="w-4 h-4" style="color:#d97706"></i>
+        </div>
+        <p class="text-2xl font-bold" style="color:#d97706">1</p>
+        <p class="text-xs" style="color:#6b7a95">Đang đàm phán</p>
+      </div>
+      <div class="p-3 rounded-xl border" style="background:#fff; border-color:rgba(0,75,154,0.1)">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style="background:#dcfce7">
+          <i data-lucide="check-circle" class="w-4 h-4" style="color:#16a34a"></i>
+        </div>
+        <p class="text-2xl font-bold" style="color:#16a34a">1</p>
+        <p class="text-xs" style="color:#6b7a95">Đã chốt tháng 6</p>
+      </div>
+    </div>
+
+    <div class="grid gap-4" style="grid-template-columns: 1fr 280px">
+      <!-- Lead list -->
+      <div>
+        <!-- Filters -->
+        <div class="flex gap-2 mb-3 flex-wrap items-center">
+          <button class="px-3 py-1.5 rounded-lg text-xs text-white" style="background:#004b9a">Tất cả</button>
+          <button class="px-3 py-1.5 rounded-lg text-xs border" style="color:#6b7a95; border-color:rgba(0,75,154,0.1)">Tiếp cận <span class="opacity-70">(3)</span></button>
+          <button class="px-3 py-1.5 rounded-lg text-xs border" style="color:#6b7a95; border-color:rgba(0,75,154,0.1)">Quan tâm <span class="opacity-70">(2)</span></button>
+          <button class="px-3 py-1.5 rounded-lg text-xs border" style="color:#6b7a95; border-color:rgba(0,75,154,0.1)">Đề xuất <span class="opacity-70">(1)</span></button>
+          <button class="px-3 py-1.5 rounded-lg text-xs border" style="color:#6b7a95; border-color:rgba(0,75,154,0.1)">Đàm phán <span class="opacity-70">(1)</span></button>
+          <button class="px-3 py-1.5 rounded-lg text-xs border" style="color:#6b7a95; border-color:rgba(0,75,154,0.1)">Chốt <span class="opacity-70">(1)</span></button>
+          <div class="w-px h-5 mx-1" style="background:rgba(0,75,154,0.1)"></div>
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-white" style="background:#dc2626">
+            <i data-lucide="flame" class="w-3 h-3"></i>
+            Hot · AI Score ≥85 <span class="opacity-70">(3)</span>
+          </button>
+        </div>
+
+        <!-- Kanban-style stage header -->
+        <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
+          <div class="flex-1 min-w-[100px] p-2.5 rounded-xl border text-center" style="background:#6b728010; border-color:#6b728030">
+            <p class="text-xs font-medium" style="color:#6b7280">Tiếp cận</p>
+            <p class="text-lg font-bold mt-0.5" style="color:#6b7280">3</p>
+            <p class="text-xs" style="color:#9ca3af">2.0 tỷ</p>
+          </div>
+          <div class="flex-1 min-w-[100px] p-2.5 rounded-xl border text-center" style="background:#0891b210; border-color:#0891b230">
+            <p class="text-xs font-medium" style="color:#0891b2">Quan tâm</p>
+            <p class="text-lg font-bold mt-0.5" style="color:#0891b2">2</p>
+            <p class="text-xs" style="color:#9ca3af">1.5 tỷ</p>
+          </div>
+          <div class="flex-1 min-w-[100px] p-2.5 rounded-xl border text-center" style="background:#7c3aed10; border-color:#7c3aed30">
+            <p class="text-xs font-medium" style="color:#7c3aed">Đề xuất</p>
+            <p class="text-lg font-bold mt-0.5" style="color:#7c3aed">1</p>
+            <p class="text-xs" style="color:#9ca3af">3.2 tỷ</p>
+          </div>
+          <div class="flex-1 min-w-[100px] p-2.5 rounded-xl border text-center" style="background:#d9770610; border-color:#d9770630">
+            <p class="text-xs font-medium" style="color:#d97706">Đàm phán</p>
+            <p class="text-lg font-bold mt-0.5" style="color:#d97706">1</p>
+            <p class="text-xs" style="color:#9ca3af">5.0 tỷ</p>
+          </div>
+          <div class="flex-1 min-w-[100px] p-2.5 rounded-xl border text-center" style="background:#16a34a10; border-color:#16a34a30">
+            <p class="text-xs font-medium" style="color:#16a34a">Chốt</p>
+            <p class="text-lg font-bold mt-0.5" style="color:#16a34a">1</p>
+            <p class="text-xs" style="color:#9ca3af">1.5 tỷ</p>
+          </div>
+        </div>
+
+        <!-- Lead cards -->
+        <div class="space-y-2.5">
+
+          <!-- Card: Nguyễn Văn Phúc -->
+          <div class="p-3.5 rounded-xl border" style="background:#fff; border-color:rgba(0,75,154,0.1); border-left:4px solid #7c3aed">
+            <div class="flex items-start gap-3">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style="background:#004b9a">N</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <span class="text-sm font-semibold" style="color:#0d1b2a">Nguyễn Văn Phúc</span>
+                  <span class="flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full" style="background:#fef2f2; color:#dc2626">
+                    <i data-lucide="flame" class="w-2.5 h-2.5"></i> HOT
+                  </span>
+                  <span class="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full" style="background:#16a34a15; color:#16a34a">
+                    <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> AI 91
+                  </span>
+                  <span class="ml-auto text-xs px-2 py-0.5 rounded-full" style="background:#7c3aed15; color:#7c3aed">Đề xuất</span>
+                </div>
+                <p class="text-xs mb-1" style="color:#004b9a">Vay mua nhà 3.2 tỷ</p>
+                <div class="flex items-center gap-3 text-xs" style="color:#9ca3af">
+                  <span>Nguồn: Website ACB</span><span>·</span>
+                  <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-2.5 h-2.5"></i> 05/06</span>
+                  <span>·</span><span class="font-medium" style="color:#d97706">3.2 tỷ</span>
+                </div>
+              </div>
+              <div class="flex gap-1 flex-shrink-0">
+                <button class="p-1.5 rounded-lg" style="background:#e8f0fb; color:#004b9a"><i data-lucide="phone" class="w-3 h-3"></i></button>
+                <button class="p-1.5 rounded-lg" style="background:#fef3c7; color:#d97706"><i data-lucide="mail" class="w-3 h-3"></i></button>
+                <button class="p-1.5 rounded-lg" style="background:#f1f5f9; color:#9ca3af"><i data-lucide="chevron-right" class="w-3 h-3"></i></button>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 mt-3">
+              <div class="flex-1 h-1 rounded-full" style="background:#7c3aed"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#7c3aed"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#7c3aed"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+            </div>
+          </div>
+
+          <!-- Card: Đỗ Văn Khải -->
+          <div class="p-3.5 rounded-xl border" style="background:#fff; border-color:rgba(0,75,154,0.1); border-left:4px solid #6b7280">
+            <div class="flex items-start gap-3">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style="background:#d97706">Đ</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <span class="text-sm font-semibold" style="color:#0d1b2a">Đỗ Văn Khải</span>
+                  <span class="flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full" style="background:#fef2f2; color:#dc2626">
+                    <i data-lucide="flame" class="w-2.5 h-2.5"></i> HOT
+                  </span>
+                  <span class="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full" style="background:#16a34a15; color:#16a34a">
+                    <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> AI 91
+                  </span>
+                  <span class="ml-auto text-xs px-2 py-0.5 rounded-full" style="background:#6b728015; color:#6b7280">Tiếp cận</span>
+                </div>
+                <p class="text-xs mb-1" style="color:#004b9a">Vay mua nhà 1.8 tỷ</p>
+                <div class="flex items-center gap-3 text-xs" style="color:#9ca3af">
+                  <span>Nguồn: SMS Campaign</span><span>·</span>
+                  <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-2.5 h-2.5"></i> 11/06</span>
+                  <span>·</span><span class="font-medium" style="color:#d97706">1.8 tỷ</span>
+                </div>
+              </div>
+              <div class="flex gap-1 flex-shrink-0">
+                <button class="p-1.5 rounded-lg" style="background:#e8f0fb; color:#004b9a"><i data-lucide="phone" class="w-3 h-3"></i></button>
+                <button class="p-1.5 rounded-lg" style="background:#fef3c7; color:#d97706"><i data-lucide="mail" class="w-3 h-3"></i></button>
+                <button class="p-1.5 rounded-lg" style="background:#f1f5f9; color:#9ca3af"><i data-lucide="chevron-right" class="w-3 h-3"></i></button>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 mt-3">
+              <div class="flex-1 h-1 rounded-full" style="background:#6b7280"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+            </div>
+          </div>
+
+          <!-- Card: Vũ Thị Hồng -->
+          <div class="p-3.5 rounded-xl border" style="background:#fff; border-color:rgba(0,75,154,0.1); border-left:4px solid #6b7280">
+            <div class="flex items-start gap-3">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style="background:#0891b2">V</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <span class="text-sm font-semibold" style="color:#0d1b2a">Vũ Thị Hồng</span>
+                  <span class="flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full" style="background:#fef2f2; color:#dc2626">
+                    <i data-lucide="flame" class="w-2.5 h-2.5"></i> HOT
+                  </span>
+                  <span class="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full" style="background:#16a34a15; color:#16a34a">
+                    <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> AI 88
+                  </span>
+                  <span class="ml-auto text-xs px-2 py-0.5 rounded-full" style="background:#6b728015; color:#6b7280">Tiếp cận</span>
+                </div>
+                <p class="text-xs mb-1" style="color:#004b9a">Tiết kiệm Online 200tr</p>
+                <div class="flex items-center gap-3 text-xs" style="color:#9ca3af">
+                  <span>Nguồn: Zalo OA</span><span>·</span>
+                  <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-2.5 h-2.5"></i> 10/06</span>
+                  <span>·</span><span class="font-medium" style="color:#d97706">200 tr</span>
+                </div>
+              </div>
+              <div class="flex gap-1 flex-shrink-0">
+                <button class="p-1.5 rounded-lg" style="background:#e8f0fb; color:#004b9a"><i data-lucide="phone" class="w-3 h-3"></i></button>
+                <button class="p-1.5 rounded-lg" style="background:#fef3c7; color:#d97706"><i data-lucide="mail" class="w-3 h-3"></i></button>
+                <button class="p-1.5 rounded-lg" style="background:#f1f5f9; color:#9ca3af"><i data-lucide="chevron-right" class="w-3 h-3"></i></button>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 mt-3">
+              <div class="flex-1 h-1 rounded-full" style="background:#6b7280"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+            </div>
+          </div>
+
+          <!-- Card: Trần Thị Mỹ (non-hot) -->
+          <div class="p-3.5 rounded-xl border" style="background:#fff; border-color:rgba(0,75,154,0.1); border-left:4px solid #0891b2">
+            <div class="flex items-start gap-3">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style="background:#0891b2">T</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <span class="text-sm font-semibold" style="color:#0d1b2a">Trần Thị Mỹ</span>
+                  <span class="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full" style="background:#d9770615; color:#d97706">
+                    <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> AI 67
+                  </span>
+                  <span class="ml-auto text-xs px-2 py-0.5 rounded-full" style="background:#0891b215; color:#0891b2">Quan tâm</span>
+                </div>
+                <p class="text-xs mb-1" style="color:#004b9a">Tiết kiệm 1 tỷ</p>
+                <div class="flex items-center gap-3 text-xs" style="color:#9ca3af">
+                  <span>Nguồn: Chiến dịch SMS</span><span>·</span>
+                  <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-2.5 h-2.5"></i> 07/06</span>
+                  <span>·</span><span class="font-medium" style="color:#d97706">1.0 tỷ</span>
+                </div>
+              </div>
+              <div class="flex gap-1 flex-shrink-0">
+                <button class="p-1.5 rounded-lg" style="background:#e8f0fb; color:#004b9a"><i data-lucide="phone" class="w-3 h-3"></i></button>
+                <button class="p-1.5 rounded-lg" style="background:#fef3c7; color:#d97706"><i data-lucide="mail" class="w-3 h-3"></i></button>
+                <button class="p-1.5 rounded-lg" style="background:#f1f5f9; color:#9ca3af"><i data-lucide="chevron-right" class="w-3 h-3"></i></button>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 mt-3">
+              <div class="flex-1 h-1 rounded-full" style="background:#0891b2"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#0891b2"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+              <div class="flex-1 h-1 rounded-full" style="background:#e5e7eb"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Funnel chart -->
+      <div>
+        <div class="p-4 rounded-xl border mb-4" style="background:#fff; border-color:rgba(0,75,154,0.1)">
+          <p class="text-sm font-semibold mb-1" style="color:#0d1b2a">Phễu chuyển đổi</p>
+          <p class="text-xs mb-3" style="color:#6b7a95">Tháng 6/2026</p>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs w-16" style="color:#6b7a95">Tiếp cận</span>
+              <div class="flex-1 h-3 rounded-full" style="background:#f1f5f9"><div class="h-full rounded-full" style="width:100%; background:#004b9a"></div></div>
+              <span class="text-xs w-8 text-right" style="color:#6b7a95">120</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs w-16" style="color:#6b7a95">Quan tâm</span>
+              <div class="flex-1 h-3 rounded-full" style="background:#f1f5f9"><div class="h-full rounded-full" style="width:62%; background:#004b9a"></div></div>
+              <span class="text-xs w-8 text-right" style="color:#6b7a95">74</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs w-16" style="color:#6b7a95">Đề xuất</span>
+              <div class="flex-1 h-3 rounded-full" style="background:#f1f5f9"><div class="h-full rounded-full" style="width:32%; background:#004b9a"></div></div>
+              <span class="text-xs w-8 text-right" style="color:#6b7a95">38</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs w-16" style="color:#6b7a95">Đàm phán</span>
+              <div class="flex-1 h-3 rounded-full" style="background:#f1f5f9"><div class="h-full rounded-full" style="width:17%; background:#004b9a"></div></div>
+              <span class="text-xs w-8 text-right" style="color:#6b7a95">21</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs w-16" style="color:#6b7a95">Chốt</span>
+              <div class="flex-1 h-3 rounded-full" style="background:#f1f5f9"><div class="h-full rounded-full" style="width:7%; background:#004b9a"></div></div>
+              <span class="text-xs w-8 text-right" style="color:#6b7a95">9</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl border" style="background:#fff; border-color:rgba(0,75,154,0.1)">
+          <p class="text-sm font-semibold mb-3" style="color:#0d1b2a">Tỷ lệ chuyển đổi</p>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs w-24 flex-shrink-0" style="color:#6b7a95">Tiếp cận → Quan tâm</span>
+            <div class="flex-1 h-1.5 rounded-full" style="background:#f1f5f9"><div class="h-full rounded-full" style="width:62%; background:#0891b2"></div></div>
+            <span class="text-xs font-medium w-8 text-right" style="color:#0891b2">62%</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs w-24 flex-shrink-0" style="color:#6b7a95">Quan tâm → Đề xuất</span>
+            <div class="flex-1 h-1.5 rounded-full" style="background:#f1f5f9"><div class="h-full rounded-full" style="width:51%; background:#7c3aed"></div></div>
+            <span class="text-xs font-medium w-8 text-right" style="color:#7c3aed">51%</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs w-24 flex-shrink-0" style="color:#6b7a95">Đề xuất → Đàm phán</span>
+            <div class="flex-1 h-1.5 rounded-full" style="background:#f1f5f9"><div class="h-full rounded-full" style="width:55%; background:#d97706"></div></div>
+            <span class="text-xs font-medium w-8 text-right" style="color:#d97706">55%</span>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs w-24 flex-shrink-0" style="color:#6b7a95">Đàm phán → Chốt</span>
+            <div class="flex-1 h-1.5 rounded-full" style="background:#f1f5f9"><div class="h-full rounded-full" style="width:43%; background:#16a34a"></div></div>
+            <span class="text-xs font-medium w-8 text-right" style="color:#16a34a">43%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!-- @dsCard group="Leads" -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lead – Chi tiết Lead (Slide-over)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  :root {
+    --background: #f0f4f9;
+    --foreground: #0d1b2a;
+    --card: #ffffff;
+    --primary: #004b9a;
+    --secondary: #e8f0fb;
+    --muted: #edf1f7;
+    --muted-foreground: #6b7a95;
+    --accent: #f97316;
+    --border: rgba(0, 75, 154, 0.12);
+    --acb-blue: #004b9a;
+    --acb-sidebar: #002d6e;
+  }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--background); color: var(--foreground); }
+</style>
+</head>
+<body class="p-5 flex justify-center">
+  <div class="flex justify-end" style="width: 100%; max-width: 900px;">
+    <div class="rounded-2xl overflow-hidden shadow-2xl flex flex-col" style="width: min(420px, 95vw); background: var(--background); max-height: 90vh;">
+
+      <!-- Header banner -->
+      <div class="px-5 pt-5 pb-4 flex-shrink-0" style="background: linear-gradient(135deg, var(--acb-sidebar) 0%, var(--acb-blue) 100%)">
+        <div class="flex items-start gap-3">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold flex-shrink-0 border-2 border-white/30" style="background:#7c3aed">N</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-white text-base">Nguyễn Văn Phúc</h2>
+              <span class="flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full" style="background: rgba(220,38,38,0.25); color:#fecaca">
+                <i data-lucide="flame" class="w-2.5 h-2.5"></i> HOT
+              </span>
+            </div>
+            <p class="text-white/70 text-xs mt-0.5">Website ACB · Tháng 6 – Vay nhà lãi suất ưu đãi</p>
+          </div>
+          <button class="p-1.5 rounded-lg flex-shrink-0" style="background: rgba(255,255,255,0.15); color: white">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <!-- AI Score -->
+        <div class="mt-4 flex items-center gap-3 p-3 rounded-xl" style="background: rgba(255,255,255,0.1)">
+          <div class="w-14 h-14 rounded-full flex flex-col items-center justify-center flex-shrink-0 border-2" style="border-color:#16a34a">
+            <span class="text-lg font-bold text-white leading-none">91</span>
+          </div>
+          <div class="flex-1">
+            <p class="text-white text-xs font-semibold flex items-center gap-1">
+              <i data-lucide="sparkles" class="w-2.5 h-2.5 text-violet-300"></i> AI Lead Score
+            </p>
+            <p class="text-white/60 text-xs mt-0.5">Khả năng chuyển đổi rất cao</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 p-5 space-y-4 overflow-y-auto">
+        <!-- AI suggestion -->
+        <div class="rounded-xl p-4 border" style="background:#fffbeb; border-color:#fde68a">
+          <div class="flex items-center gap-1.5 mb-2">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5" style="color:#92400e"></i>
+            <p class="text-xs font-semibold" style="color:#92400e">AI gợi ý sản phẩm</p>
+          </div>
+          <p class="text-sm font-medium mb-1" style="color:#78350f">Vay mua nhà – Ưu đãi lãi suất 6.5% năm đầu</p>
+          <p class="text-xs" style="color:#92400e">Khách có lịch sử lương ổn định 25tr/tháng, từng tra cứu lãi suất vay nhà 3 lần trong tuần qua trên website ACB.</p>
+        </div>
+
+        <!-- Contact info -->
+        <div class="rounded-xl p-4 border" style="background:#fff; border-color:var(--border)">
+          <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--muted-foreground)">Thông tin liên hệ</p>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <i data-lucide="phone" class="w-3.5 h-3.5" style="color:var(--primary)"></i>
+              <span class="text-xs">0901 234 567</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="mail" class="w-3.5 h-3.5" style="color:var(--primary)"></i>
+              <span class="text-xs">phuc.nguyen@gmail.com</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="calendar" class="w-3.5 h-3.5" style="color:var(--primary)"></i>
+              <span class="text-xs">Tiếp nhận ngày 05/06</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="megaphone" class="w-3.5 h-3.5" style="color:var(--primary)"></i>
+              <span class="text-xs">Từ chiến dịch: Tháng 6 – Vay nhà lãi suất ưu đãi</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deal info -->
+        <div class="rounded-xl p-4 border" style="background:#fff; border-color:var(--border)">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-semibold uppercase tracking-wide" style="color:var(--muted-foreground)">Thông tin deal</p>
+            <span class="text-sm font-bold" style="color:#d97706">3.2 tỷ</span>
+          </div>
+          <p class="text-xs mb-3" style="color:#004b9a">Vay mua nhà 3.2 tỷ</p>
+          <div class="flex items-center gap-1 mb-2">
+            <div class="flex-1 h-1.5 rounded-full" style="background:#7c3aed"></div>
+            <div class="flex-1 h-1.5 rounded-full" style="background:#7c3aed"></div>
+            <div class="flex-1 h-1.5 rounded-full" style="background:#7c3aed"></div>
+            <div class="flex-1 h-1.5 rounded-full" style="background:#e5e7eb"></div>
+            <div class="flex-1 h-1.5 rounded-full" style="background:#e5e7eb"></div>
+          </div>
+          <div class="flex items-center justify-between text-xs" style="color:var(--muted-foreground)">
+            <span>Đề xuất</span>
+            <span>Bước 3/5</span>
+          </div>
+        </div>
+
+        <!-- Convert success (state example) -->
+        <div class="rounded-xl p-4 border flex items-start gap-2" style="background:#dcfce7; border-color:#bbf7d0">
+          <i data-lucide="check-circle-2" class="w-4 h-4 flex-shrink-0 mt-0.5" style="color:#16a34a"></i>
+          <div>
+            <p class="text-xs font-semibold" style="color:#16a34a">Đã chuyển thành khách hàng</p>
+            <p class="text-xs mt-0.5" style="color:#15803d">Deal mới đã được tạo tại giai đoạn "Tiếp cận" trong Sales Pipeline.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="p-5 pt-0 space-y-2 flex-shrink-0">
+        <button class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium" style="background: linear-gradient(135deg, #92400e 0%, #d97706 100%); color:#fff">
+          <i data-lucide="phone" class="w-3.5 h-3.5"></i> Gọi ngay
+        </button>
+        <button class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium" style="background: linear-gradient(135deg, #002d6e 0%, #004b9a 100%); color:#fff">
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i> Chuyển thành khách hàng
+        </button>
+      </div>
+    </div>
+  </div>
+<script>lucide.createIcons();</script>
+</body>
+</html>
