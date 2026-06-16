@@ -562,110 +562,168 @@ const AI_INSIGHTS = [
   },
 ];
 
-// ── AI Insights floating button + popup ───────────────────────────────────────
+// ── AI Insights Ticker (giống CampaignsPage) ─────────────────────────────────
 function AiInsightsFloat() {
-  const [open, setOpen] = useState(false);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [fading, setFading] = useState(false);
   const [dismissed, setDismissed] = useState<number[]>([]);
-  const visible = AI_INSIGHTS.filter(i => !dismissed.includes(i.id));
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const activeInsights = AI_INSIGHTS.filter(i => !dismissed.includes(i.id));
+
+  useEffect(() => {
+    if (activeInsights.length <= 1) return;
+    const timer = setInterval(() => {
+      setFading(true);
+      setTimeout(() => {
+        setCurrentIdx(prev => (prev + 1) % activeInsights.length);
+        setFading(false);
+      }, 350);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [activeInsights.length]);
+
+  if (activeInsights.length === 0) return null;
+
+  const safeIdx = currentIdx % activeInsights.length;
+  const insight = activeInsights[safeIdx];
+  const expandedInsight = AI_INSIGHTS.find(i => i.id === expandedId);
 
   return (
     <>
-      {/* Floating button – fixed top-right inside main area */}
-      <div className="fixed z-40" style={{ top: 64, right: 20 }}>
-        <button
-          onClick={() => setOpen(v => !v)}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl shadow-lg transition-all hover:opacity-90 active:scale-95"
-          style={{ background: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%)", color: "#fff" }}
+      {/* Compact auto-rotating ticker bar */}
+      <div
+        className="flex items-center gap-3 px-4 py-2.5 rounded-xl mb-4"
+        style={{ background: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%)", border: "1px solid rgba(124,58,237,0.3)" }}
+      >
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.18)" }}>
+          <Brain size={13} style={{ color: "#fff" }} />
+        </div>
+
+        <div
+          className="flex-1 min-w-0 flex items-center gap-2"
+          style={{ opacity: fading ? 0 : 1, transition: "opacity 0.35s ease" }}
         >
-          <Brain size={15} />
-          <span className="text-xs font-semibold">AI Phân tích</span>
-          {visible.length > 0 && (
-            <span
-              className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
-              style={{ background: "#fff", color: "#7c3aed", fontSize: 10 }}
-            >
-              {visible.length}
-            </span>
-          )}
+          <span
+            className="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0"
+            style={{ background: insight.badgeBg, color: "#fff", fontSize: 10 }}
+          >
+            {insight.badge}
+          </span>
+          <span className="text-xs font-semibold text-white truncate">{insight.title}</span>
+          <span className="text-xs text-white/50 truncate hidden lg:block">
+            · {insight.body.substring(0, 65)}…
+          </span>
+        </div>
+
+        <button
+          onClick={() => setExpandedId(insight.id)}
+          className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium flex-shrink-0 hover:bg-white/30 transition-all"
+          style={{ background: "rgba(255,255,255,0.18)", color: "#fff" }}
+        >
+          Xem <ArrowRight size={10} />
         </button>
 
-        {/* Popup panel */}
-        {open && (
-          <div
-            className="absolute right-0 mt-2 rounded-2xl shadow-2xl overflow-hidden"
-            style={{ width: 360, maxHeight: "calc(100vh - 140px)", border: "1px solid rgba(124,58,237,0.25)", background: "#fff" }}
-          >
-            {/* Header */}
-            <div
-              className="flex items-center justify-between px-4 py-3 flex-shrink-0"
-              style={{ background: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%)" }}
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "rgba(255,255,255,0.2)" }}>
-                  <Brain size={13} style={{ color: "#fff" }} />
-                </div>
-                <span className="text-xs font-semibold text-white">AI Phân tích & Đề xuất</span>
-                <span className="text-xs text-white/50">· Cập nhật 14:30</span>
-              </div>
-              <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-white/20 transition-colors">
-                <X size={13} style={{ color: "rgba(255,255,255,0.8)" }} />
-              </button>
-            </div>
+        <div className="flex gap-1 flex-shrink-0">
+          {activeInsights.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => { setFading(true); setTimeout(() => { setCurrentIdx(i); setFading(false); }, 200); }}
+              className="rounded-full transition-all"
+              style={{ width: i === safeIdx ? 16 : 6, height: 6, background: i === safeIdx ? "#fff" : "rgba(255,255,255,0.3)" }}
+            />
+          ))}
+        </div>
 
-            {/* Content – scrollable */}
-            <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 200px)" }}>
-              {visible.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10">
-                  <CheckCircle2 size={22} style={{ color: "#16a34a", marginBottom: 8 }} />
-                  <p className="text-xs" style={{ color: "#6b7a95" }}>Tất cả insights đã được xử lý</p>
+        <button
+          onClick={() => setDismissed(d => [...d, insight.id])}
+          className="p-1 rounded hover:bg-white/20 transition-all flex-shrink-0"
+        >
+          <X size={12} style={{ color: "rgba(255,255,255,0.6)" }} />
+        </button>
+      </div>
+
+      {/* Expanded detail modal */}
+      {expandedInsight && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(3px)" }}
+          onClick={() => setExpandedId(null)}
+        >
+          <div
+            className="rounded-2xl shadow-2xl overflow-hidden"
+            style={{ background: "#fff", width: "min(440px, 95vw)", border: "1px solid rgba(124,58,237,0.2)" }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="px-5 py-4" style={{ background: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%)" }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Brain size={15} style={{ color: "#fff" }} />
+                  <span className="text-sm font-semibold text-white">AI Phân tích</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}>AI-powered</span>
                 </div>
-              ) : (
-                <div className="p-3 space-y-2.5">
-                  {visible.map(insight => {
-                    const Icon = insight.icon;
-                    return (
-                      <div key={insight.id} className="rounded-xl p-3 border" style={{ background: insight.bg, borderColor: insight.border }}>
-                        <div className="flex items-start gap-2.5">
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: insight.iconColor + "20" }}>
-                            <Icon size={13} style={{ color: insight.iconColor }} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                              <span className="text-xs px-1.5 py-0.5 rounded font-semibold" style={{ background: insight.badgeBg, color: "#fff", fontSize: 10 }}>{insight.badge}</span>
-                              <span className="text-xs font-semibold" style={{ color: "#0d1b2a" }}>{insight.title}</span>
-                            </div>
-                            <p className="text-xs leading-relaxed mb-2" style={{ color: "#374151" }}>{insight.body}</p>
-                            <div className="flex gap-1.5">
-                              <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium" style={{ background: insight.actionColor, color: "#fff" }}>
-                                <ArrowRight size={9} /> {insight.action}
-                              </button>
-                              <button onClick={() => setDismissed(d => [...d, insight.id])} className="px-2.5 py-1.5 rounded-lg text-xs" style={{ color: "#9ca3af" }}>Bỏ qua</button>
-                            </div>
-                          </div>
-                          <button onClick={() => setDismissed(d => [...d, insight.id])} className="p-0.5 rounded hover:bg-black/10 flex-shrink-0">
-                            <X size={11} style={{ color: "#9ca3af" }} />
+                <button onClick={() => setExpandedId(null)} className="p-1.5 rounded-lg hover:bg-white/20" style={{ color: "#fff" }}>
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+            <div className="p-5">
+              {(() => {
+                const EIcon = expandedInsight.icon;
+                return (
+                  <div className="rounded-xl p-4 border" style={{ background: expandedInsight.bg, borderColor: expandedInsight.border }}>
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: expandedInsight.iconColor + "20" }}>
+                        <EIcon size={18} style={{ color: expandedInsight.iconColor }} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs px-2 py-0.5 rounded font-bold" style={{ background: expandedInsight.badgeBg, color: "#fff" }}>{expandedInsight.badge}</span>
+                          <span className="text-sm font-semibold" style={{ color: "#0d1b2a" }}>{expandedInsight.title}</span>
+                        </div>
+                        <p className="text-sm leading-relaxed mb-4" style={{ color: "#374151" }}>{expandedInsight.body}</p>
+                        <div className="flex gap-2">
+                          <button
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium hover:opacity-90"
+                            style={{ background: expandedInsight.actionColor, color: "#fff" }}
+                          >
+                            <ArrowRight size={11} /> {expandedInsight.action}
+                          </button>
+                          <button
+                            onClick={() => { setDismissed(d => [...d, expandedInsight.id]); setExpandedId(null); }}
+                            className="px-4 py-2 rounded-xl text-xs border hover:bg-gray-50"
+                            style={{ color: "#9ca3af", borderColor: "#e5e7eb" }}
+                          >
+                            Bỏ qua
                           </button>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-              {dismissed.length > 0 && (
-                <div className="px-3 pb-3">
-                  <button onClick={() => setDismissed([])} className="flex items-center gap-1.5 text-xs w-full justify-center py-2 rounded-lg hover:bg-purple-50 transition-colors" style={{ color: "#7c3aed" }}>
-                    <RefreshCw size={10} /> Khôi phục {dismissed.length} insight đã ẩn
+                    </div>
+                  </div>
+                );
+              })()}
+              <p className="text-xs font-semibold mt-4 mb-2" style={{ color: "#9ca3af" }}>TẤT CẢ PHÂN TÍCH ({activeInsights.length})</p>
+              <div className="space-y-2">
+                {activeInsights.map(ins => (
+                  <button
+                    key={ins.id}
+                    onClick={() => setExpandedId(ins.id)}
+                    className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left transition-all hover:opacity-80"
+                    style={{ background: ins.id === expandedInsight.id ? ins.bg : "#f8fafc", border: `1px solid ${ins.id === expandedInsight.id ? ins.border : "transparent"}` }}
+                  >
+                    <span className="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0" style={{ background: ins.badgeBg, color: "#fff", fontSize: 10 }}>{ins.badge}</span>
+                    <span className="text-xs font-medium flex-1 truncate" style={{ color: "#0d1b2a" }}>{ins.title}</span>
                   </button>
-                </div>
+                ))}
+              </div>
+              {dismissed.length > 0 && (
+                <button onClick={() => setDismissed([])} className="flex items-center gap-1.5 text-xs mt-3 mx-auto hover:opacity-80" style={{ color: "#7c3aed" }}>
+                  <RefreshCw size={10} /> Khôi phục {dismissed.length} insight đã ẩn
+                </button>
               )}
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Backdrop to close popup when clicking outside */}
-      {open && (
-        <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
+        </div>
       )}
     </>
   );
