@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Target, Plus, ChevronRight, Users, TrendingUp,
   Megaphone, Search, ChevronDown, BarChart2, Brain, AlertTriangle,
@@ -120,6 +120,211 @@ function FilterDropdown({ value, options, onChange }: { value: string; options: 
   );
 }
 
+// ── "Thêm cơ hội" modal form ───────────────────────────────────────────────────
+const SANPHAM_MODAL = ["Vay mua nhà", "Thẻ tín dụng", "CASA", "Tiết kiệm Online", "Vay tín chấp DN", "Payroll", "Bảo hiểm nhân thọ", "SME Trade Finance"];
+const RM_LIST = ["Nguyễn Văn A", "Lê Thị Hoa", "Trần Văn Nam", "Phạm Thị Thu", "Hoàng Minh Khoa"];
+
+function ThemCoHoiModal({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState({
+    tenKH: "", sdt: "", email: "", nguon: "RM tự tạo",
+    sanPham: "Thẻ tín dụng", trangThai: "Mới", rm: "Nguyễn Văn A", ghiChu: "",
+  });
+  const [saved, setSaved] = useState(false);
+  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  if (saved) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(3px)" }}>
+        <div className="rounded-2xl p-8 flex flex-col items-center" style={{ background: "#fff", width: "min(400px,95vw)" }}>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: "#dcfce7" }}>
+            <CheckCircle2 size={32} style={{ color: "#16a34a" }} />
+          </div>
+          <p className="text-base font-bold mb-1" style={{ color: "#0d1b2a" }}>Tạo cơ hội thành công!</p>
+          <p className="text-sm text-center mb-4" style={{ color: "#6b7a95" }}>
+            <span className="font-semibold">{form.tenKH || "Khách hàng mới"}</span> đã được thêm vào danh sách cơ hội bán hàng.
+          </p>
+          <div className="w-full p-3 rounded-xl mb-4" style={{ background: "#f0f9ff", border: "1px solid #bae6fd" }}>
+            <p className="text-xs" style={{ color: "#0891b2" }}>
+              <Sparkles size={11} style={{ display: "inline", marginRight: 4 }} />
+              AI gợi ý: Liên hệ trong 24h đầu tăng 3× tỉ lệ chuyển đổi với sản phẩm <strong>{form.sanPham}</strong>.
+            </p>
+          </div>
+          <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-semibold hover:opacity-90" style={{ background: "#004b9a", color: "#fff" }}>
+            Đóng
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(3px)" }} onClick={onClose}>
+      <div className="rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ background: "#fff", width: "min(520px,95vw)", maxHeight: "95vh" }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="px-6 py-4 flex-shrink-0" style={{ background: "linear-gradient(135deg, #001a4d 0%, #004b9a 100%)" }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.18)" }}>
+                <Plus size={16} style={{ color: "#fff" }} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">Thêm cơ hội bán hàng</p>
+                <p className="text-xs text-white/60">Điền thông tin để tạo cơ hội mới</p>
+              </div>
+            </div>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/20" style={{ color: "#fff" }}><X size={15} /></button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {/* AI gợi ý banner */}
+          <div className="flex items-start gap-2.5 p-3 rounded-xl" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
+            <Sparkles size={13} style={{ color: "#d97706", flexShrink: 0, marginTop: 1 }} />
+            <p className="text-xs" style={{ color: "#92400e" }}>
+              AI nhận diện: Nguồn <strong>RM tự tạo</strong> + sản phẩm <strong>Thẻ tín dụng</strong> có tỉ lệ convert trung bình <strong>18.4%</strong> trong tháng 5/2025.
+            </p>
+          </div>
+
+          {/* Row 1: Tên KH + SĐT */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: "#374151" }}>Tên khách hàng <span style={{ color: "#dc2626" }}>*</span></label>
+              <input value={form.tenKH} onChange={e => set("tenKH", e.target.value)}
+                placeholder="Nguyễn Văn A"
+                className="w-full px-3 py-2 rounded-xl text-sm border outline-none focus:border-blue-500 transition-colors"
+                style={{ borderColor: "rgba(0,75,154,0.2)", background: "#f9fbff" }} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: "#374151" }}>Số điện thoại <span style={{ color: "#dc2626" }}>*</span></label>
+              <input value={form.sdt} onChange={e => set("sdt", e.target.value)}
+                placeholder="0988 xxx xxx"
+                className="w-full px-3 py-2 rounded-xl text-sm border outline-none focus:border-blue-500 transition-colors"
+                style={{ borderColor: "rgba(0,75,154,0.2)", background: "#f9fbff" }} />
+            </div>
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-xs font-semibold mb-1.5" style={{ color: "#374151" }}>Email</label>
+            <input value={form.email} onChange={e => set("email", e.target.value)}
+              placeholder="email@example.com"
+              className="w-full px-3 py-2 rounded-xl text-sm border outline-none focus:border-blue-500 transition-colors"
+              style={{ borderColor: "rgba(0,75,154,0.2)", background: "#f9fbff" }} />
+          </div>
+
+          {/* Row: Nguồn + Sản phẩm */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: "#374151" }}>Nguồn <span style={{ color: "#dc2626" }}>*</span></label>
+              <select value={form.nguon} onChange={e => set("nguon", e.target.value)}
+                className="w-full px-3 py-2 rounded-xl text-sm border outline-none focus:border-blue-500"
+                style={{ borderColor: "rgba(0,75,154,0.2)", background: "#f9fbff" }}>
+                {Object.keys(NGUON_CONFIG).map(n => <option key={n}>{n}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: "#374151" }}>Sản phẩm quan tâm <span style={{ color: "#dc2626" }}>*</span></label>
+              <select value={form.sanPham} onChange={e => set("sanPham", e.target.value)}
+                className="w-full px-3 py-2 rounded-xl text-sm border outline-none focus:border-blue-500"
+                style={{ borderColor: "rgba(0,75,154,0.2)", background: "#f9fbff" }}>
+                {SANPHAM_MODAL.map(s => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Row: Trạng thái + RM */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: "#374151" }}>Trạng thái</label>
+              <div className="flex flex-wrap gap-1.5">
+                {Object.entries(TRANGTHAI_CONFIG).map(([k, v]) => (
+                  <button key={k} onClick={() => set("trangThai", k)}
+                    className="px-2.5 py-1 rounded-xl text-xs font-medium transition-all"
+                    style={{ background: form.trangThai === k ? v.color : v.bg, color: form.trangThai === k ? "#fff" : v.color, border: `1px solid ${v.color}30` }}>
+                    {k}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: "#374151" }}>RM phụ trách</label>
+              <select value={form.rm} onChange={e => set("rm", e.target.value)}
+                className="w-full px-3 py-2 rounded-xl text-sm border outline-none focus:border-blue-500"
+                style={{ borderColor: "rgba(0,75,154,0.2)", background: "#f9fbff" }}>
+                {RM_LIST.map(r => <option key={r}>{r}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Ghi chú */}
+          <div>
+            <label className="block text-xs font-semibold mb-1.5" style={{ color: "#374151" }}>Ghi chú</label>
+            <textarea value={form.ghiChu} onChange={e => set("ghiChu", e.target.value)}
+              placeholder="Thêm ghi chú về khách hàng, nhu cầu, timeline..."
+              rows={3}
+              className="w-full px-3 py-2 rounded-xl text-sm border outline-none resize-none focus:border-blue-500 transition-colors"
+              style={{ borderColor: "rgba(0,75,154,0.2)", background: "#f9fbff" }} />
+          </div>
+        </div>
+
+        {/* Footer actions */}
+        <div className="px-6 py-4 flex gap-3 flex-shrink-0" style={{ borderTop: "1px solid rgba(0,75,154,0.1)", background: "#f8fafc" }}>
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-medium border hover:bg-gray-50"
+            style={{ borderColor: "rgba(0,75,154,0.2)", color: "#374151" }}>
+            Hủy
+          </button>
+          <button
+            onClick={() => { if (form.tenKH && form.sdt) setSaved(true); }}
+            className="flex-2 px-6 py-2.5 rounded-xl text-sm font-semibold hover:opacity-90 transition-all flex items-center gap-2"
+            style={{ background: form.tenKH && form.sdt ? "linear-gradient(135deg, #002d6e 0%, #004b9a 100%)" : "#e5e7eb", color: form.tenKH && form.sdt ? "#fff" : "#9ca3af", flex: 2 }}>
+            <Plus size={14} /> Tạo cơ hội
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── AI gợi ý banner (Leads tab) ───────────────────────────────────────────────
+const LEADS_AI_TIPS = [
+  "3 leads từ Campaign CASA chưa được tiếp cận lần 2 – tỉ lệ convert tăng 2× nếu gọi lại trong 24h.",
+  "KH \"Trịnh Thị H\" đã đến giai đoạn Quan tâm – AI đề xuất upsell Payroll vào cuộc họp tiếp theo.",
+  "5 leads nguồn Referral có AI Score ≥80 – ưu tiên tiếp cận trước cuối tuần để tối đa tỉ lệ chốt.",
+  "Nguồn Social (Zalo) đang có tỉ lệ tiếp cận cao nhất tuần này: 78%. Tăng cường leads kênh này.",
+];
+
+function AiLeadsBanner() {
+  const [idx, setIdx] = useState(0);
+  const [fading, setFading] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setFading(true);
+      setTimeout(() => { setIdx(i => (i + 1) % LEADS_AI_TIPS.length); setFading(false); }, 300);
+    }, 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  if (dismissed) return null;
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl mb-4" style={{ background: "linear-gradient(135deg, #78350f 0%, #d97706 100%)", border: "1px solid rgba(217,119,6,0.3)" }}>
+      <Sparkles size={13} style={{ color: "#fff", flexShrink: 0 }} />
+      <p className="flex-1 text-xs text-white font-medium" style={{ opacity: fading ? 0 : 1, transition: "opacity 0.3s" }}>
+        {LEADS_AI_TIPS[idx]}
+      </p>
+      <div className="flex gap-1 flex-shrink-0">
+        {LEADS_AI_TIPS.map((_, i) => (
+          <span key={i} className="rounded-full" style={{ width: i === idx ? 14 : 5, height: 5, background: i === idx ? "#fff" : "rgba(255,255,255,0.35)", display: "block", transition: "width 0.3s" }} />
+        ))}
+      </div>
+      <button onClick={() => setDismissed(true)} className="p-1 rounded hover:bg-white/20 flex-shrink-0"><X size={11} style={{ color: "rgba(255,255,255,0.7)" }} /></button>
+    </div>
+  );
+}
+
 // ── Tab 1: Cơ hội bán hàng (table view) ───────────────────────────────────────
 function LeadsTab() {
   const [nguonFilter, setNguonFilter] = useState("Tất cả nguồn");
@@ -128,6 +333,7 @@ function LeadsTab() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [selectedRow, setSelectedRow] = useState<TableLead | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const filtered = TABLE_LEADS.filter(l => {
     const matchNguon = nguonFilter === "Tất cả nguồn" || l.nguon.toLowerCase().includes(nguonFilter.toLowerCase().replace("tất cả nguồn", ""));
@@ -157,6 +363,9 @@ function LeadsTab() {
         ))}
       </div>
 
+      {/* AI gợi ý banner */}
+      <AiLeadsBanner />
+
       {/* Filters row */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <FilterDropdown value={nguonFilter} options={NGUON_OPTIONS} onChange={(v) => { setNguonFilter(v); setPage(1); }} />
@@ -177,12 +386,15 @@ function LeadsTab() {
         </div>
 
         <button
+          onClick={() => setShowModal(true)}
           className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90 flex-shrink-0"
           style={{ background: "linear-gradient(135deg, #002d6e 0%, #004b9a 100%)", color: "#fff" }}
         >
           <Plus size={13} /> Thêm cơ hội
         </button>
       </div>
+
+      {showModal && <ThemCoHoiModal onClose={() => setShowModal(false)} />}
 
       {/* Table */}
       <div className="rounded-xl border overflow-hidden" style={{ background: "#fff", borderColor: "rgba(0,75,154,0.1)" }}>
@@ -890,14 +1102,249 @@ function DashboardTab() {
         </>
       )}
 
-      {(subTab === "rm" || subTab === "campaign" || subTab === "growth") && (
-        <div className="flex flex-col items-center justify-center py-20 rounded-xl border" style={{ background: "#fff", borderColor: "rgba(0,75,154,0.1)" }}>
-          <Activity size={32} style={{ color: "#d1d5db", marginBottom: 12 }} />
-          <p className="text-sm font-medium" style={{ color: "#9ca3af" }}>
-            {subTab === "rm" ? "Hiệu quả RM" : subTab === "campaign" ? "Hiệu quả Chiến dịch" : "Tăng trưởng"}
-          </p>
-          <p className="text-xs mt-1" style={{ color: "#d1d5db" }}>Dữ liệu đang được cập nhật</p>
-        </div>
+      {/* ── Sub-tab: Hiệu quả RM ── */}
+      {subTab === "rm" && (
+        <>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            {[
+              { label: "RM đang hoạt động", value: "12", color: "#004b9a", bg: "#e8f0fb" },
+              { label: "Lead trung bình / RM", value: "65", color: "#7c3aed", bg: "#ede9fe" },
+              { label: "Avg Convert Rate", value: "14.2%", color: "#16a34a", bg: "#dcfce7" },
+            ].map(k => (
+              <div key={k.label} className="p-4 rounded-xl border" style={{ background: "#fff", borderColor: "rgba(0,75,154,0.1)" }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2" style={{ background: k.bg }}>
+                  <Activity size={15} style={{ color: k.color }} />
+                </div>
+                <p className="text-2xl font-bold" style={{ color: k.color }}>{k.value}</p>
+                <p className="text-xs" style={{ color: "#6b7a95" }}>{k.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="p-4 rounded-xl border" style={{ background: "#fff", borderColor: "rgba(0,75,154,0.1)" }}>
+            <p className="text-xs font-semibold mb-3" style={{ color: "#0d1b2a" }}>BẢNG HIỆU QUẢ RM THÁNG 5/2025</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(0,75,154,0.08)" }}>
+                    {["RM", "Leads phụ trách", "Đã tiếp cận", "Chốt deal", "% Convert", "Doanh số (tỷ)", "Xếp hạng"].map(h => (
+                      <th key={h} className="pb-2 text-left font-semibold" style={{ color: "#6b7a95", paddingRight: 12 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { name: "Nguyễn Văn A", leads: 89, contacted: 72, deals: 18, convert: 20.2, revenue: 8.4, rank: 1 },
+                    { name: "Lê Thị Hoa",    leads: 76, contacted: 59, deals: 14, convert: 18.4, revenue: 6.2, rank: 2 },
+                    { name: "Trần Văn Nam",  leads: 68, contacted: 48, deals: 11, convert: 16.2, revenue: 5.1, rank: 3 },
+                    { name: "Phạm Thị Thu",  leads: 55, contacted: 38, deals:  8, convert: 14.5, revenue: 3.8, rank: 4 },
+                    { name: "Hoàng M. Khoa", leads: 50, contacted: 31, deals:  6, convert: 12.0, revenue: 2.8, rank: 5 },
+                  ].map((r, i) => (
+                    <tr key={i} style={{ borderBottom: "1px solid rgba(0,75,154,0.06)" }}>
+                      <td className="py-3 font-medium" style={{ color: "#0d1b2a", paddingRight: 12 }}>
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0" style={{ background: ["#004b9a","#7c3aed","#0891b2","#16a34a","#d97706"][i] }}>
+                            {r.name.split(" ").pop()![0]}
+                          </div>
+                          {r.name}
+                        </div>
+                      </td>
+                      <td className="py-3" style={{ color: "#374151", paddingRight: 12 }}>{r.leads}</td>
+                      <td className="py-3" style={{ paddingRight: 12 }}>
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-1.5 rounded-full" style={{ background: "#e5e7eb", width: 44 }}>
+                            <div className="h-full rounded-full" style={{ width: `${Math.round(r.contacted/r.leads*100)}%`, background: "#7c3aed" }} />
+                          </div>
+                          <span style={{ color: "#7c3aed" }}>{Math.round(r.contacted/r.leads*100)}%</span>
+                        </div>
+                      </td>
+                      <td className="py-3 font-medium" style={{ color: "#16a34a", paddingRight: 12 }}>{r.deals}</td>
+                      <td className="py-3 font-semibold" style={{ color: r.convert >= 18 ? "#16a34a" : "#d97706", paddingRight: 12 }}>{r.convert}%</td>
+                      <td className="py-3 font-semibold" style={{ color: "#004b9a", paddingRight: 12 }}>{r.revenue}</td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: r.rank === 1 ? "#fef3c7" : r.rank === 2 ? "#f1f5f9" : "#f9fafb", color: r.rank === 1 ? "#d97706" : r.rank === 2 ? "#6b7280" : "#9ca3af" }}>
+                          #{r.rank}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="mt-4 p-4 rounded-xl border" style={{ background: "#fffbeb", borderColor: "#fde68a" }}>
+            <p className="text-xs font-semibold mb-1.5 flex items-center gap-1.5" style={{ color: "#92400e" }}>
+              <Sparkles size={12} /> AI nhận định về hiệu quả đội RM
+            </p>
+            <p className="text-xs" style={{ color: "#78350f" }}>
+              RM Nguyễn Văn A dẫn đầu với 20.2% convert. Pattern thành công: tiếp cận qua Zalo &gt; Gọi trong 48h &gt; Gặp mặt tư vấn. Đề xuất chia sẻ playbook này cho toàn đội để nâng avg convert lên 17%.
+            </p>
+          </div>
+        </>
+      )}
+
+      {/* ── Sub-tab: Hiệu quả Chiến dịch ── */}
+      {subTab === "campaign" && (
+        <>
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            {[
+              { label: "Tổng chiến dịch", value: "8", color: "#004b9a", bg: "#e8f0fb" },
+              { label: "Đang chạy", value: "3", color: "#16a34a", bg: "#dcfce7" },
+              { label: "Avg % Convert", value: "14.8%", color: "#d97706", bg: "#fef3c7" },
+              { label: "Tổng doanh số (tỷ)", value: "32.6", color: "#7c3aed", bg: "#ede9fe" },
+            ].map(k => (
+              <div key={k.label} className="p-3.5 rounded-xl border" style={{ background: "#fff", borderColor: "rgba(0,75,154,0.1)" }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center mb-2" style={{ background: k.bg }}>
+                  <TrendingUp size={13} style={{ color: k.color }} />
+                </div>
+                <p className="text-2xl font-bold" style={{ color: k.color }}>{k.value}</p>
+                <p className="text-xs" style={{ color: "#6b7a95" }}>{k.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {[
+            { name: "CASA Q2/2025", source: "Khối", status: "Đang chạy", statusColor: "#16a34a", leads: 1250, contacted: 940, deals: 85, convert: 6.8, target: 100, actual: 68, revenue: 11.2 },
+            { name: "Vay mua nhà Summer", source: "Vùng", status: "Đang chạy", statusColor: "#16a34a", leads: 980, contacted: 735, deals: 62, convert: 6.3, target: 150, actual: 72, revenue: 9.8 },
+            { name: "Thẻ tín dụng Visa", source: "3D", status: "Đang chạy", statusColor: "#16a34a", leads: 1100, contacted: 820, deals: 74, convert: 6.7, target: 80, actual: 67, revenue: 6.5 },
+            { name: "SME Trade Finance", source: "Khối", status: "Kết thúc", statusColor: "#9ca3af", leads: 620, contacted: 430, deals: 41, convert: 6.6, target: 200, actual: 58, revenue: 3.2 },
+            { name: "Bảo hiểm An tâm Q1", source: "Vùng", status: "Kết thúc", statusColor: "#9ca3af", leads: 870, contacted: 610, deals: 52, convert: 6.0, target: 50, actual: 60, revenue: 1.9 },
+          ].map((c, i) => (
+            <div key={i} className="mb-3 p-4 rounded-xl border" style={{ background: "#fff", borderColor: "rgba(0,75,154,0.1)" }}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#e8f0fb" }}>
+                  <Megaphone size={15} style={{ color: "#004b9a" }} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-sm" style={{ color: "#0d1b2a" }}>{c.name}</span>
+                    <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: c.statusColor + "15", color: c.statusColor }}>{c.status}</span>
+                    <SourceBadge source={c.source} />
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="text-xs font-bold" style={{ color: c.actual >= 70 ? "#16a34a" : "#d97706" }}>{c.actual}% mục tiêu</p>
+                  <p className="text-xs" style={{ color: "#9ca3af" }}>{c.revenue} tỷ doanh số</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                {[
+                  { label: "Leads", value: c.leads.toLocaleString("vi-VN"), color: "#004b9a" },
+                  { label: "Tiếp cận", value: `${Math.round(c.contacted/c.leads*100)}%`, color: "#7c3aed" },
+                  { label: "Deals", value: c.deals.toString(), color: "#16a34a" },
+                  { label: "% Convert", value: `${c.convert}%`, color: c.convert >= 7 ? "#16a34a" : "#d97706" },
+                ].map(m => (
+                  <div key={m.label} className="text-center p-2 rounded-lg" style={{ background: "#f8fafc" }}>
+                    <p className="text-sm font-bold" style={{ color: m.color }}>{m.value}</p>
+                    <p className="text-xs" style={{ color: "#9ca3af" }}>{m.label}</p>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div className="flex items-center justify-between text-xs mb-1" style={{ color: "#9ca3af" }}>
+                  <span>Tiến độ đạt mục tiêu</span>
+                  <span style={{ color: c.actual >= 70 ? "#16a34a" : "#d97706", fontWeight: 600 }}>{c.actual}%</span>
+                </div>
+                <div className="h-2 rounded-full" style={{ background: "#e5e7eb" }}>
+                  <div className="h-full rounded-full transition-all" style={{ width: `${c.actual}%`, background: c.actual >= 70 ? "#16a34a" : "#d97706" }} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* ── Sub-tab: Tăng trưởng ── */}
+      {subTab === "growth" && (
+        <>
+          <div className="grid grid-cols-4 gap-3 mb-5">
+            {[
+              { label: "Leads mới T5/2025", value: "+412", change: "+22% so T4", color: "#004b9a", up: true },
+              { label: "Doanh số (tỷ)", value: "32.6", change: "+20% so T4", color: "#16a34a", up: true },
+              { label: "Deal chốt", value: "210", change: "+15% so T4", color: "#7c3aed", up: true },
+              { label: "Khách hàng mới", value: "186", change: "+18% so T4", color: "#d97706", up: true },
+            ].map(k => (
+              <div key={k.label} className="p-4 rounded-xl border" style={{ background: "#fff", borderColor: "rgba(0,75,154,0.1)" }}>
+                <p className="text-xs mb-2" style={{ color: "#6b7a95" }}>{k.label}</p>
+                <p className="text-2xl font-bold" style={{ color: k.color }}>{k.value}</p>
+                <p className="text-xs mt-1 font-medium" style={{ color: "#16a34a" }}>↑ {k.change}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Line charts row */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="p-4 rounded-xl border" style={{ background: "#fff", borderColor: "rgba(0,75,154,0.1)" }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold" style={{ color: "#0d1b2a" }}>TĂNG TRƯỞNG LEADS MỚI</p>
+                <span className="text-xs font-bold" style={{ color: "#004b9a" }}>+22%</span>
+              </div>
+              <div style={{ height: 100 }}><LineChart /></div>
+              <div className="flex justify-between mt-1">
+                {MONTHS.map(m => <span key={m} className="text-center" style={{ color: "#9ca3af", fontSize: 9, width: `${100/12}%` }}>{m}</span>)}
+              </div>
+            </div>
+            <div className="p-4 rounded-xl border" style={{ background: "#fff", borderColor: "rgba(0,75,154,0.1)" }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold" style={{ color: "#0d1b2a" }}>TĂNG TRƯỞNG DOANH SỐ (TỶ)</p>
+                <span className="text-xs font-bold" style={{ color: "#16a34a" }}>32.6</span>
+              </div>
+              <div style={{ height: 100 }}><LineChart /></div>
+              <div className="flex justify-between mt-1">
+                {MONTHS.map(m => <span key={m} className="text-center" style={{ color: "#9ca3af", fontSize: 9, width: `${100/12}%` }}>{m}</span>)}
+              </div>
+            </div>
+          </div>
+
+          {/* Month-over-month table */}
+          <div className="p-4 rounded-xl border" style={{ background: "#fff", borderColor: "rgba(0,75,154,0.1)" }}>
+            <p className="text-xs font-semibold mb-3" style={{ color: "#0d1b2a" }}>TĂNG TRƯỞNG THEO THÁNG</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(0,75,154,0.08)" }}>
+                    {["Tháng", "Leads mới", "Deal chốt", "% Convert", "Doanh số (tỷ)", "Tăng trưởng"].map(h => (
+                      <th key={h} className="pb-2 text-left font-semibold" style={{ color: "#6b7a95", paddingRight: 12 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { month: "T1/2025", leads: 186, deals: 22, convert: 11.8, revenue: 8.2, growth: +5 },
+                    { month: "T2/2025", leads: 198, deals: 25, convert: 12.6, revenue: 9.1, growth: +6.5 },
+                    { month: "T3/2025", leads: 245, deals: 31, convert: 12.7, revenue: 10.5, growth: +8.2 },
+                    { month: "T4/2025", leads: 338, deals: 41, convert: 12.1, revenue: 11.2, growth: +9.4 },
+                    { month: "T5/2025", leads: 412, deals: 54, convert: 13.1, revenue: 14.1, growth: +22.0 },
+                    { month: "T6/2025 (dự kiến)", leads: 480, deals: 68, convert: 14.2, revenue: 16.8, growth: +16.5 },
+                  ].map((r, i) => (
+                    <tr key={i} style={{ borderBottom: "1px solid rgba(0,75,154,0.06)" }}>
+                      <td className="py-2.5 font-medium" style={{ color: i === 5 ? "#7c3aed" : "#0d1b2a", paddingRight: 12 }}>{r.month}</td>
+                      <td className="py-2.5" style={{ color: "#004b9a", paddingRight: 12 }}>{r.leads.toLocaleString("vi-VN")}</td>
+                      <td className="py-2.5 font-medium" style={{ color: "#16a34a", paddingRight: 12 }}>{r.deals}</td>
+                      <td className="py-2.5" style={{ color: "#374151", paddingRight: 12 }}>{r.convert}%</td>
+                      <td className="py-2.5 font-semibold" style={{ color: "#d97706", paddingRight: 12 }}>{r.revenue}</td>
+                      <td className="py-2.5">
+                        <span className="flex items-center gap-1 font-semibold" style={{ color: "#16a34a" }}>
+                          <TrendingUp size={10} /> +{r.growth}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="mt-4 p-4 rounded-xl border" style={{ background: "#f0fdf4", borderColor: "#bbf7d0" }}>
+            <p className="text-xs font-semibold mb-1.5 flex items-center gap-1.5" style={{ color: "#166534" }}>
+              <Sparkles size={12} /> Dự báo AI – Quý 2/2025
+            </p>
+            <p className="text-xs" style={{ color: "#15803d" }}>
+              Dựa trên tốc độ tăng trưởng hiện tại, AI dự báo Q2/2025 sẽ đạt <strong>~1,230 leads</strong> và <strong>~43 tỷ doanh số</strong>. Khuyến nghị tập trung vào nguồn Referral và Campaign vì tỉ lệ convert cao hơn 1.8× so với kênh khác.
+            </p>
+          </div>
+        </>
       )}
     </div>
   );
