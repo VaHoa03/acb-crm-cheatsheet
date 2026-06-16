@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate } from "react-router";
 import {
   LayoutDashboard, Users, TrendingUp, Target,
-  Bell, Settings, ChevronDown, Search, LogOut, Bot, Sparkles, Megaphone
+  Bell, Settings, ChevronDown, Search, LogOut, Bot, Sparkles, Megaphone, ShoppingBag
 } from "lucide-react";
 import { useState } from "react";
 import { CustomerModal, type Customer } from "../components/CustomerModal";
@@ -12,6 +12,7 @@ const navItems = [
   { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard", badge: null },
   { to: "/app/customers", icon: Users, label: "Khách hàng", badge: "124" },
   { to: "/app/overview", icon: TrendingUp, label: "Tổng quan", badge: null },
+  { to: "/app/cohoi", icon: ShoppingBag, label: "Cơ hội bán hàng", badge: "128" },
   { to: "/app/leads", icon: Target, label: "Lead", badge: "8" },
   { to: "/app/campaigns", icon: Megaphone, label: "Chiến dịch", badge: null },
 ];

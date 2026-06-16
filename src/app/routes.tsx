@@ -7,6 +7,7 @@ import { CustomersPage } from "./pages/CustomersPage";
 import { OverviewPage } from "./pages/OverviewPage";
 import { LeadsPage } from "./pages/LeadsPage";
 import { CampaignsPage } from "./pages/CampaignsPage";
+import { CoHoiBanHangPage } from "./pages/CoHoiBanHangPage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <Navigate to="/login" replace /> },
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
       { path: "overview", Component: OverviewPage },
       { path: "leads", Component: LeadsPage },
       { path: "campaigns", Component: CampaignsPage },
+      { path: "cohoi", Component: CoHoiBanHangPage },
     ],
   },
 ]);
