@@ -1021,9 +1021,138 @@ function LineChart() {
   );
 }
 
+// ── Campaign VUNG detail modal ──────────────────────────────────────────────
+const VUNG_BASE = [
+  { vung: "VÙNG 1", phatSinh: 22, suyGiam: 2888, duNo: 4810, bl: 768, ttqt: 1636, goiPhi: 78, banGoi: 802, phanBo: 4187, tiepCan: 2179, dongY: 353, convert: 77 },
+  { vung: "VÙNG 2", phatSinh: 13, suyGiam: 2489, duNo: 3488, bl: 494, ttqt: 1229, goiPhi: 91, banGoi: 700, phanBo: 1120, tiepCan: 471,  dongY: 57,  convert: 15 },
+  { vung: "VÙNG 3", phatSinh: 11, suyGiam: 2179, duNo: 2778, bl: 582, ttqt:  998, goiPhi: 39, banGoi: 576, phanBo: 1210, tiepCan: 713,  dongY: 198, convert: 21 },
+  { vung: "VÙNG 4", phatSinh:  3, suyGiam:  421, duNo:  764, bl: 179, ttqt:  106, goiPhi:  0, banGoi:  23, phanBo: 1183, tiepCan: 326,  dongY: 69,  convert:  9 },
+  { vung: "VÙNG 5", phatSinh:  4, suyGiam:  750, duNo: 1451, bl: 300, ttqt:  230, goiPhi:  4, banGoi:  82, phanBo: 1581, tiepCan: 630,  dongY: 155, convert: 21 },
+  { vung: "VÙNG 6", phatSinh:  6, suyGiam: 1048, duNo: 1592, bl: 499, ttqt:  174, goiPhi:  4, banGoi:  40, phanBo: 2263, tiepCan: 915,  dongY: 268, convert: 27 },
+  { vung: "VÙNG 7", phatSinh: 15, suyGiam:  838, duNo: 1314, bl: 300, ttqt:  499, goiPhi: 30, banGoi: 181, phanBo: 2090, tiepCan: 746,  dongY: 133, convert: 18 },
+  { vung: "VÙNG 8", phatSinh: 19, suyGiam: 3430, duNo: 2871, bl: 950, ttqt: 1325, goiPhi: 64, banGoi: 815, phanBo: 4386, tiepCan: 1754, dongY: 208, convert: 65 },
+];
+
+// Scale multipliers per campaign so the regional data looks distinct
+const CAMPAIGN_SCALE: Record<string, number[]> = {
+  "CASA Q2/2025":        [1.10, 0.85, 0.92, 0.60, 0.80, 0.95, 0.90, 1.20],
+  "Vay mua nhà Summer":  [0.90, 0.75, 1.05, 0.45, 0.70, 1.10, 0.85, 1.15],
+  "Thẻ tín dụng Visa":   [1.00, 0.80, 0.88, 0.50, 0.65, 1.00, 0.78, 1.00],
+  "Cross-sell Thẻ T5":   [0.70, 0.65, 0.80, 0.40, 0.55, 0.85, 0.70, 0.90],
+  "SME Trade Finance":   [0.55, 0.50, 0.60, 0.30, 0.45, 0.65, 0.55, 0.70],
+  "Bảo hiểm An tâm Q1": [0.45, 0.40, 0.50, 0.25, 0.38, 0.52, 0.45, 0.55],
+  "Tiết kiệm Online Q1": [0.30, 0.28, 0.35, 0.18, 0.25, 0.38, 0.30, 0.40],
+  "Tái gửi KHHH Q2":     [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00],
+};
+
+function CampaignVungModal({ name, etlDt, onClose }: { name: string; etlDt: string; onClose: () => void }) {
+  const scales = CAMPAIGN_SCALE[name] ?? Array(8).fill(1);
+  const rows = VUNG_BASE.map((r, i) => {
+    const s = scales[i];
+    const sc = (v: number) => Math.round(v * s);
+    return { ...r, phatSinh: sc(r.phatSinh), suyGiam: sc(r.suyGiam), duNo: sc(r.duNo), bl: sc(r.bl),
+      ttqt: sc(r.ttqt), goiPhi: sc(r.goiPhi), banGoi: sc(r.banGoi),
+      phanBo: sc(r.phanBo), tiepCan: sc(r.tiepCan), dongY: sc(r.dongY), convert: sc(r.convert) };
+  });
+  const tot = (key: keyof typeof rows[0]) => rows.reduce((a, r) => a + (r[key] as number), 0);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(3px)" }} onClick={onClose}>
+      <div className="relative rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ background: "#fff", width: "min(1100px, 96vw)", maxHeight: "90vh", border: "1px solid rgba(0,75,154,0.2)" }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center gap-3 px-5 py-4 flex-shrink-0" style={{ background: "linear-gradient(135deg, #001a4d 0%, #002d6e 100%)" }}>
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-bold text-sm">Chi tiết khu vực — {name}</p>
+            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>ETL_DT: {etlDt} · TÌNH HÌNH TIẾP CẬN – ĐỒNG Ý – CONVERT theo từng khu vực</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/20 transition-all flex-shrink-0" style={{ background: "rgba(255,255,255,0.12)", color: "#fff" }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-auto flex-1 p-4">
+          <table className="text-xs border-collapse w-full" style={{ minWidth: 900 }}>
+            <thead>
+              <tr>
+                <th rowSpan={2} className="px-3 py-2 text-center font-semibold border-b border-r" style={{ background: "#002d6e", color: "#fff", borderColor: "rgba(255,255,255,0.15)", minWidth: 90, verticalAlign: "middle" }}>ETL_DT</th>
+                <th rowSpan={2} className="px-3 py-2 text-left font-semibold border-b border-r" style={{ background: "#002d6e", color: "#fff", borderColor: "rgba(255,255,255,0.15)", minWidth: 80, verticalAlign: "middle" }}>TÊN KHU VỰC</th>
+                <th colSpan={7} className="px-3 py-2 text-center font-semibold border-b border-r" style={{ background: "#004b9a", color: "#fff", borderColor: "rgba(255,255,255,0.15)" }}>KHHH</th>
+                <th colSpan={5} className="px-3 py-2 text-center font-semibold border-b" style={{ background: "#0369a1", color: "#fff" }}>KH MỚI Q1</th>
+              </tr>
+              <tr>
+                {["SLKH PHÁT SINH PHÍ BL","SLKH SUY GIẢM PHÍ BL","SLKH TIỀM NĂNG DƯ NỢ","SLKH TIỀM NĂNG BL","SLKH TIỀM NĂNG TTQT","SLKH GÓI PHÍ LC","SLKH BĂN GÓI PHÍ TTR"].map((h, i) => (
+                  <th key={h} className="px-2 py-1.5 text-center font-semibold border-b border-r" style={{ background: "#1d4ed8", color: "#fff", borderColor: "rgba(255,255,255,0.12)", minWidth: 70, borderRight: i === 6 ? "2px solid rgba(255,255,255,0.3)" : undefined }}>
+                    <span style={{ fontSize: 9, lineHeight: 1.3, display: "block" }}>{h}</span>
+                  </th>
+                ))}
+                {["SLKH PHÂN BỔ","SLKH TIẾP CẬN","SLKH ĐỒNG Ý","SLKH CONVERT","TỶ LỆ %"].map((h, i) => (
+                  <th key={h} className="px-2 py-1.5 text-center font-semibold border-b" style={{ background: "#0284c7", color: "#fff", minWidth: 68, borderRight: i < 4 ? "1px solid rgba(255,255,255,0.12)" : undefined }}>
+                    <span style={{ fontSize: 9, lineHeight: 1.3, display: "block" }}>{h}</span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, i) => {
+                const pct = row.phanBo > 0 && row.convert > 0 ? ((row.convert / row.phanBo) * 100).toFixed(1) : "–";
+                const tiepCanPct = row.phanBo > 0 ? Math.min(Math.round(row.tiepCan / row.phanBo * 100), 100) : 0;
+                return (
+                  <tr key={i} style={{ background: i % 2 === 0 ? "#fff" : "#f8fafd" }}>
+                    {i === 0 && (
+                      <td rowSpan={8} className="px-3 py-2 text-center border-r font-medium" style={{ color: "#0d1b2a", borderColor: "rgba(0,75,154,0.1)", verticalAlign: "middle" }}>{etlDt}</td>
+                    )}
+                    <td className="px-3 py-2 font-semibold border-r border-b" style={{ color: "#0d1b2a", borderColor: "rgba(0,75,154,0.08)" }}>{row.vung}</td>
+                    <td className="px-2 py-2 text-center border-r border-b" style={{ color: "#374151", borderColor: "rgba(0,75,154,0.06)" }}>{row.phatSinh || "–"}</td>
+                    <td className="px-2 py-2 text-center border-r border-b" style={{ color: "#374151", borderColor: "rgba(0,75,154,0.06)" }}>{row.suyGiam.toLocaleString("vi-VN") || "–"}</td>
+                    <td className="px-2 py-2 text-center border-r border-b" style={{ color: "#374151", borderColor: "rgba(0,75,154,0.06)" }}>{row.duNo.toLocaleString("vi-VN") || "–"}</td>
+                    <td className="px-2 py-2 text-center border-r border-b" style={{ color: "#374151", borderColor: "rgba(0,75,154,0.06)" }}>{row.bl.toLocaleString("vi-VN") || "–"}</td>
+                    <td className="px-2 py-2 text-center border-r border-b" style={{ color: "#374151", borderColor: "rgba(0,75,154,0.06)" }}>{row.ttqt.toLocaleString("vi-VN") || "–"}</td>
+                    <td className="px-2 py-2 text-center border-r border-b" style={{ color: "#374151", borderColor: "rgba(0,75,154,0.06)" }}>{row.goiPhi || "–"}</td>
+                    <td className="px-2 py-2 text-center border-r border-b" style={{ color: "#374151", borderColor: "rgba(0,75,154,0.1)", borderRight: "2px solid rgba(0,75,154,0.12)" }}>{row.banGoi.toLocaleString("vi-VN")}</td>
+                    <td className="px-2 py-2 text-center border-r border-b font-semibold" style={{ color: "#004b9a", borderColor: "rgba(0,75,154,0.06)" }}>{row.phanBo.toLocaleString("vi-VN")}</td>
+                    <td className="px-2 py-2 text-center border-r border-b" style={{ borderColor: "rgba(0,75,154,0.06)" }}>
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="font-medium" style={{ color: "#7c3aed" }}>{row.tiepCan.toLocaleString("vi-VN")}</span>
+                        <div className="h-1 rounded-full w-10" style={{ background: "#e5e7eb" }}>
+                          <div className="h-full rounded-full" style={{ width: `${tiepCanPct}%`, background: "#7c3aed" }} />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-2 py-2 text-center border-r border-b font-medium" style={{ color: "#0891b2", borderColor: "rgba(0,75,154,0.06)" }}>{row.dongY.toLocaleString("vi-VN")}</td>
+                    <td className="px-2 py-2 text-center border-r border-b font-bold" style={{ color: "#16a34a", borderColor: "rgba(0,75,154,0.06)" }}>{row.convert || "–"}</td>
+                    <td className="px-2 py-2 text-center border-b" style={{ fontWeight: 600, color: pct !== "–" ? (parseFloat(pct) >= 3 ? "#16a34a" : "#d97706") : "#9ca3af", borderColor: "rgba(0,75,154,0.06)" }}>{pct !== "–" ? `${pct}%` : "–"}</td>
+                  </tr>
+                );
+              })}
+              {/* Total */}
+              <tr style={{ background: "#002d6e" }}>
+                <td colSpan={2} className="px-3 py-2.5 font-bold text-white text-center border-r" style={{ borderColor: "rgba(255,255,255,0.15)" }}>
+                  {etlDt} – Tổng
+                </td>
+                {(["phatSinh","suyGiam","duNo","bl","ttqt","goiPhi","banGoi"] as const).map((k, i) => (
+                  <td key={k} className="px-2 py-2.5 text-center font-bold text-white border-r" style={{ borderColor: "rgba(255,255,255,0.15)" }}>{tot(k).toLocaleString("vi-VN") || "–"}</td>
+                ))}
+                <td className="px-2 py-2.5 text-center font-bold border-r" style={{ color: "#93c5fd", borderColor: "rgba(255,255,255,0.2)" }}>{tot("phanBo").toLocaleString("vi-VN")}</td>
+                <td className="px-2 py-2.5 text-center font-bold border-r" style={{ color: "#c4b5fd", borderColor: "rgba(255,255,255,0.2)" }}>{tot("tiepCan").toLocaleString("vi-VN")}</td>
+                <td className="px-2 py-2.5 text-center font-bold border-r" style={{ color: "#6ee7b7", borderColor: "rgba(255,255,255,0.2)" }}>{tot("dongY").toLocaleString("vi-VN")}</td>
+                <td className="px-2 py-2.5 text-center font-bold border-r" style={{ color: "#86efac", borderColor: "rgba(255,255,255,0.2)" }}>{tot("convert").toLocaleString("vi-VN")}</td>
+                <td className="px-2 py-2.5 text-center font-bold" style={{ color: "#fde68a" }}>
+                  {tot("phanBo") > 0 ? ((tot("convert") / tot("phanBo")) * 100).toFixed(1) + "%" : "–"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DashboardTab() {
   const [subTab, setSubTab] = useState<"overview" | "rm" | "campaign" | "growth">("overview");
   const [dateRange] = useState("01/05/2025 - 31/05/2025");
+  const [vungModal, setVungModal] = useState<string | null>(null);
 
   const SUB_TABS = [
     { key: "overview", label: "Tổng quan" },
@@ -1282,7 +1411,8 @@ function DashboardTab() {
                     <th rowSpan={2} className="px-2 py-2 text-center font-semibold border-b border-r" style={{ background: "#002d6e", color: "#fff", borderColor: "rgba(255,255,255,0.15)", minWidth: 56, verticalAlign: "middle" }}>NGUỒN</th>
                     <th rowSpan={2} className="px-2 py-2 text-center font-semibold border-b border-r" style={{ background: "#002d6e", color: "#fff", borderColor: "rgba(255,255,255,0.15)", minWidth: 60, verticalAlign: "middle" }}>TRẠNG THÁI</th>
                     <th colSpan={7} className="px-3 py-2 text-center font-semibold border-b border-r" style={{ background: "#004b9a", color: "#fff", borderColor: "rgba(255,255,255,0.15)" }}>KHHH</th>
-                    <th colSpan={5} className="px-3 py-2 text-center font-semibold border-b" style={{ background: "#0369a1", color: "#fff" }}>KH MỚI PHÂN BỔ</th>
+                    <th colSpan={5} className="px-3 py-2 text-center font-semibold border-b border-r" style={{ background: "#0369a1", color: "#fff", borderColor: "rgba(255,255,255,0.15)" }}>KH MỚI PHÂN BỔ</th>
+                    <th rowSpan={2} className="px-2 py-2 text-center font-semibold border-b border-l" style={{ background: "#1e1b4b", color: "#fff", borderColor: "rgba(255,255,255,0.15)", minWidth: 68, verticalAlign: "middle" }}>CHI TIẾT</th>
                   </tr>
                   <tr>
                     {[
@@ -1360,9 +1490,18 @@ function DashboardTab() {
                           </div>
                         </td>
                         <td className="px-2 py-2 text-center border-r border-b font-bold" style={{ color: "#16a34a", borderColor: "rgba(0,75,154,0.06)" }}>{row.convert || "–"}</td>
-                        <td className="px-2 py-2 text-center border-b" style={{ fontWeight: 600, borderColor: "rgba(0,75,154,0.06)",
+                        <td className="px-2 py-2 text-center border-b border-r" style={{ fontWeight: 600, borderColor: "rgba(0,75,154,0.06)",
                           color: pct !== "–" ? (parseFloat(pct) >= 3 ? "#16a34a" : "#d97706") : "#9ca3af" }}>
                           {pct !== "–" ? `${pct}%` : "–"}
+                        </td>
+                        <td className="px-2 py-2 text-center border-b border-l" style={{ borderColor: "rgba(0,75,154,0.06)" }}>
+                          <button
+                            onClick={() => setVungModal(row.name)}
+                            className="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
+                            style={{ background: "#1e1b4b", color: "#fff", letterSpacing: "0.01em" }}
+                          >
+                            Chi tiết →
+                          </button>
                         </td>
                       </tr>
                     );
@@ -1379,12 +1518,22 @@ function DashboardTab() {
                     <td className="px-2 py-2.5 text-center font-bold border-r" style={{ color: "#c4b5fd", borderColor: "rgba(255,255,255,0.2)" }}>10,540</td>
                     <td className="px-2 py-2.5 text-center font-bold border-r" style={{ color: "#6ee7b7", borderColor: "rgba(255,255,255,0.2)" }}>1,822</td>
                     <td className="px-2 py-2.5 text-center font-bold border-r" style={{ color: "#86efac", borderColor: "rgba(255,255,255,0.2)" }}>432</td>
-                    <td className="px-2 py-2.5 text-center font-bold" style={{ color: "#fde68a" }}>2.4%</td>
+                    <td className="px-2 py-2.5 text-center font-bold border-r" style={{ color: "#fde68a", borderColor: "rgba(255,255,255,0.2)" }}>2.4%</td>
+                    <td className="px-2 py-2.5 text-center border-l" style={{ borderColor: "rgba(255,255,255,0.1)" }}></td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
+
+          {/* VUNG detail modal */}
+          {vungModal && (
+            <CampaignVungModal
+              name={vungModal}
+              etlDt="30/05/2026"
+              onClose={() => setVungModal(null)}
+            />
+          )}
         </>
       )}
 
