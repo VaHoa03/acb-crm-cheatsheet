@@ -1,5 +1,5 @@
-import { X, Calendar, Users, Target, TrendingUp, Wallet, ChevronRight, Flame, Sparkles } from "lucide-react";
-import { leads, formatVal, type Campaign } from "../data/leadsData";
+import { X, Calendar, Users, Target, TrendingUp, Wallet, ChevronRight, Flame, Sparkles, Medal, Trophy } from "lucide-react";
+import { leads, campaigns, formatVal, type Campaign } from "../data/leadsData";
 
 interface Props {
   campaign: Campaign | null;
@@ -143,6 +143,102 @@ export function CampaignDetailPanel({ campaign, onClose, onSelectLead }: Props) 
               </div>
             </div>
           </div>
+
+          {/* Campaign ranking vs all campaigns */}
+          {(() => {
+            const ranked = [...campaigns]
+              .filter(c => c.converted > 0 || c.leads > 0)
+              .sort((a, b) => b.kpiResult.convertRate - a.kpiResult.convertRate);
+            const rankIdx = ranked.findIndex(c => c.id === campaign.id);
+            const rankPos = rankIdx + 1;
+            const total = ranked.length;
+            const topPct = total > 0 ? Math.round((rankPos / total) * 100) : 0;
+
+            const RANK_METRICS = [
+              {
+                label: "Xếp hạng % Convert",
+                rank: rankPos,
+                total,
+                value: `${campaign.kpiResult.convertRate}%`,
+                color: rankPos === 1 ? "#d97706" : rankPos <= 3 ? "#0891b2" : "#6b7280",
+              },
+              {
+                label: "Xếp hạng Leads phân bổ",
+                rank: [...campaigns].sort((a, b) => b.leads - a.leads).findIndex(c => c.id === campaign.id) + 1,
+                total,
+                value: campaign.leads.toLocaleString("vi-VN"),
+                color: "#004b9a",
+              },
+              {
+                label: "Xếp hạng Doanh số",
+                rank: [...campaigns].sort((a, b) => b.kpiResult.netLoanGrowth - a.kpiResult.netLoanGrowth).findIndex(c => c.id === campaign.id) + 1,
+                total,
+                value: formatVal(campaign.kpiResult.netLoanGrowth),
+                color: "#16a34a",
+              },
+            ];
+
+            return (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide mb-2 flex items-center gap-1.5" style={{ color: "var(--muted-foreground)" }}>
+                  <Trophy size={12} /> Xếp hạng chiến dịch
+                </p>
+                <div className="rounded-xl border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+                  {/* Top badge */}
+                  <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: "var(--border)", background: rankPos === 1 ? "#fef3c7" : rankPos <= 3 ? "#e0f2fe" : "#f8fafc" }}>
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: rankPos === 1 ? "#d97706" : rankPos <= 3 ? "#0891b2" : "#6b7280", color: "#fff" }}>
+                      {rankPos === 1 ? <Trophy size={16} /> : <Medal size={16} />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold" style={{ color: rankPos === 1 ? "#92400e" : rankPos <= 3 ? "#0c4a6e" : "#374151" }}>
+                        #{rankPos} / {total} chiến dịch
+                      </p>
+                      <p className="text-xs" style={{ color: "#6b7a95" }}>
+                        {rankPos === 1 ? "Dẫn đầu hệ thống về tỉ lệ convert" : rankPos <= 3 ? `Top ${topPct}% toàn hệ thống` : `Hiệu quả ở mức trung bình`}
+                      </p>
+                    </div>
+                    <span className="text-xs px-2 py-1 rounded-lg font-semibold" style={{ background: rankPos <= 3 ? "#16a34a15" : "#f1f5f9", color: rankPos <= 3 ? "#16a34a" : "#9ca3af" }}>
+                      Top {topPct}%
+                    </span>
+                  </div>
+
+                  {/* Rank metrics */}
+                  <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+                    {RANK_METRICS.map((m, i) => (
+                      <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                          style={{ background: m.rank === 1 ? "#fef3c7" : "#f1f5f9", color: m.rank === 1 ? "#d97706" : "#6b7280" }}>
+                          {m.rank}
+                        </div>
+                        <span className="flex-1 text-xs" style={{ color: "var(--muted-foreground)" }}>{m.label}</span>
+                        <span className="text-xs font-bold" style={{ color: m.color }}>{m.value}</span>
+                        <span className="text-xs" style={{ color: "#9ca3af" }}>/ {m.total}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Comparison bar vs top performer */}
+                  {rankPos > 1 && (() => {
+                    const top = ranked[0];
+                    const pct = top.kpiResult.convertRate > 0
+                      ? Math.round((campaign.kpiResult.convertRate / top.kpiResult.convertRate) * 100)
+                      : 0;
+                    return (
+                      <div className="px-4 py-3 border-t" style={{ borderColor: "var(--border)", background: "#fafbfd" }}>
+                        <div className="flex items-center justify-between text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>
+                          <span>Convert rate so với #{1} ({top.name})</span>
+                          <span className="font-semibold" style={{ color: pct >= 80 ? "#16a34a" : "#d97706" }}>{pct}%</span>
+                        </div>
+                        <div className="h-1.5 rounded-full" style={{ background: "#e5e7eb" }}>
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct >= 80 ? "#16a34a" : "#d97706" }} />
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Leads in campaign */}
           <div>
