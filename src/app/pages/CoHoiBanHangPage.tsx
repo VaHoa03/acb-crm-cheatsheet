@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Target, Plus, ChevronRight, Users, TrendingUp,
   Megaphone, Search, ChevronDown, BarChart2, Brain, AlertTriangle,
@@ -24,6 +24,9 @@ type TableLead = {
   ngayTao: string;
   avatarBg: string;
   avatar: string;
+  aiScore: number;
+  giaTriDeal: string;
+  lastContact: number; // hours since last contact
 };
 
 const NGUON_CONFIG: Record<string, { color: string; bg: string }> = {
@@ -47,18 +50,18 @@ const TRANGTHAI_CONFIG: Record<string, { color: string; bg: string }> = {
 };
 
 const TABLE_LEADS: TableLead[] = [
-  { id: 1, name: "Nguyễn Văn A", phone: "0988 123 456", nguon: "Campaign CASA Q2/2025", sanPham: "CASA, Thẻ tín dụng", trangThai: "Đang tiếp cận", rm: "Nguyễn Văn A", ngayTao: "20/05/2025", avatarBg: "#004b9a", avatar: "NA" },
-  { id: 2, name: "Công ty ABC", phone: "0312 345 678", nguon: "HO phân bổ", sanPham: "Vay tín chấp DN", trangThai: "Quan tâm", rm: "Nguyễn Văn A", ngayTao: "20/05/2025", avatarBg: "#7c3aed", avatar: "CA" },
-  { id: 3, name: "Trần Thị B", phone: "0901 234 567", nguon: "Referral", sanPham: "Vay mua nhà", trangThai: "Mới", rm: "Nguyễn Văn A", ngayTao: "19/05/2025", avatarBg: "#16a34a", avatar: "TB" },
-  { id: 4, name: "Lê Văn C", phone: "0912 345 678", nguon: "Social (Facebook)", sanPham: "Thẻ tín dụng", trangThai: "Đang tiếp cận", rm: "Nguyễn Văn A", ngayTao: "19/05/2025", avatarBg: "#0891b2", avatar: "LC" },
-  { id: 5, name: "Công ty XYZ", phone: "0109 876 543", nguon: "RM tự tạo", sanPham: "CASA, Payroll", trangThai: "Quan tâm", rm: "Nguyễn Văn A", ngayTao: "18/05/2025", avatarBg: "#d97706", avatar: "CX" },
-  { id: 6, name: "Phạm Thị D", phone: "0933 456 789", nguon: "OCR (Danh thiếp)", sanPham: "Vay mua nhà", trangThai: "Mới", rm: "Nguyễn Văn A", ngayTao: "18/05/2025", avatarBg: "#dc2626", avatar: "PD" },
-  { id: 7, name: "Hoàng Minh E", phone: "0977 321 654", nguon: "Survey/Form", sanPham: "Tiết kiệm Online", trangThai: "Mới", rm: "Lê Thị Hoa", ngayTao: "17/05/2025", avatarBg: "#4f46e5", avatar: "HE" },
-  { id: 8, name: "Bùi Thị F", phone: "0856 789 012", nguon: "Campaign Vay nhà T6", sanPham: "Vay mua nhà, BHNT", trangThai: "Đang tiếp cận", rm: "Trần Văn Nam", ngayTao: "17/05/2025", avatarBg: "#0284c7", avatar: "BF" },
-  { id: 9, name: "Phan Văn G", phone: "0911 222 333", nguon: "Social (Zalo)", sanPham: "Thẻ tín dụng Visa", trangThai: "Quan tâm", rm: "Nguyễn Văn A", ngayTao: "16/05/2025", avatarBg: "#0d9488", avatar: "PG" },
-  { id: 10, name: "Trịnh Thị H", phone: "0908 444 555", nguon: "Referral", sanPham: "CASA, Payroll", trangThai: "Chốt deal", rm: "Lê Thị Hoa", ngayTao: "16/05/2025", avatarBg: "#ca8a04", avatar: "TH" },
-  { id: 11, name: "Lý Văn I", phone: "0935 666 777", nguon: "HO phân bổ", sanPham: "Vay tín chấp DN", trangThai: "Đang tiếp cận", rm: "Trần Văn Nam", ngayTao: "15/05/2025", avatarBg: "#9333ea", avatar: "LI" },
-  { id: 12, name: "Đỗ Thị K", phone: "0971 888 999", nguon: "Campaign Thẻ TD T5", sanPham: "Thẻ tín dụng", trangThai: "Chốt deal", rm: "Nguyễn Văn A", ngayTao: "15/05/2025", avatarBg: "#be123c", avatar: "DK" },
+  { id: 1,  name: "Nguyễn Văn A",  phone: "0988 123 456", nguon: "Campaign CASA Q2/2025", sanPham: "CASA, Thẻ tín dụng",   trangThai: "Đang tiếp cận", rm: "Nguyễn Văn A",  ngayTao: "20/05/2025", avatarBg: "#004b9a", avatar: "NA", aiScore: 82, giaTriDeal: "450tr",   lastContact: 24 },
+  { id: 2,  name: "Công ty ABC",    phone: "0312 345 678", nguon: "HO phân bổ",             sanPham: "Vay tín chấp DN",     trangThai: "Quan tâm",       rm: "Nguyễn Văn A",  ngayTao: "20/05/2025", avatarBg: "#7c3aed", avatar: "CA", aiScore: 91, giaTriDeal: "1.2 tỷ", lastContact: 6  },
+  { id: 3,  name: "Trần Thị B",     phone: "0901 234 567", nguon: "Referral",               sanPham: "Vay mua nhà",         trangThai: "Mới",            rm: "Nguyễn Văn A",  ngayTao: "19/05/2025", avatarBg: "#16a34a", avatar: "TB", aiScore: 65, giaTriDeal: "820tr",   lastContact: 72 },
+  { id: 4,  name: "Lê Văn C",       phone: "0912 345 678", nguon: "Social (Facebook)",      sanPham: "Thẻ tín dụng",        trangThai: "Đang tiếp cận", rm: "Nguyễn Văn A",  ngayTao: "19/05/2025", avatarBg: "#0891b2", avatar: "LC", aiScore: 74, giaTriDeal: "95tr",    lastContact: 12 },
+  { id: 5,  name: "Công ty XYZ",    phone: "0109 876 543", nguon: "RM tự tạo",              sanPham: "CASA, Payroll",       trangThai: "Quan tâm",       rm: "Nguyễn Văn A",  ngayTao: "18/05/2025", avatarBg: "#d97706", avatar: "CX", aiScore: 88, giaTriDeal: "2.5 tỷ", lastContact: 3  },
+  { id: 6,  name: "Phạm Thị D",     phone: "0933 456 789", nguon: "OCR (Danh thiếp)",       sanPham: "Vay mua nhà",         trangThai: "Mới",            rm: "Nguyễn Văn A",  ngayTao: "18/05/2025", avatarBg: "#dc2626", avatar: "PD", aiScore: 56, giaTriDeal: "680tr",   lastContact: 96 },
+  { id: 7,  name: "Hoàng Minh E",   phone: "0977 321 654", nguon: "Survey/Form",            sanPham: "Tiết kiệm Online",    trangThai: "Mới",            rm: "Lê Thị Hoa",    ngayTao: "17/05/2025", avatarBg: "#4f46e5", avatar: "HE", aiScore: 43, giaTriDeal: "120tr",   lastContact: 60 },
+  { id: 8,  name: "Bùi Thị F",      phone: "0856 789 012", nguon: "Campaign Vay nhà T6",    sanPham: "Vay mua nhà, BHNT",   trangThai: "Đang tiếp cận", rm: "Trần Văn Nam",  ngayTao: "17/05/2025", avatarBg: "#0284c7", avatar: "BF", aiScore: 79, giaTriDeal: "750tr",   lastContact: 18 },
+  { id: 9,  name: "Phan Văn G",     phone: "0911 222 333", nguon: "Social (Zalo)",          sanPham: "Thẻ tín dụng Visa",   trangThai: "Quan tâm",       rm: "Nguyễn Văn A",  ngayTao: "16/05/2025", avatarBg: "#0d9488", avatar: "PG", aiScore: 87, giaTriDeal: "68tr",    lastContact: 8  },
+  { id: 10, name: "Trịnh Thị H",    phone: "0908 444 555", nguon: "Referral",               sanPham: "CASA, Payroll",       trangThai: "Chốt deal",      rm: "Lê Thị Hoa",    ngayTao: "16/05/2025", avatarBg: "#ca8a04", avatar: "TH", aiScore: 95, giaTriDeal: "380tr",   lastContact: 2  },
+  { id: 11, name: "Lý Văn I",       phone: "0935 666 777", nguon: "HO phân bổ",             sanPham: "Vay tín chấp DN",     trangThai: "Đang tiếp cận", rm: "Trần Văn Nam",  ngayTao: "15/05/2025", avatarBg: "#9333ea", avatar: "LI", aiScore: 71, giaTriDeal: "1.8 tỷ", lastContact: 52 },
+  { id: 12, name: "Đỗ Thị K",       phone: "0971 888 999", nguon: "Campaign Thẻ TD T5",     sanPham: "Thẻ tín dụng",        trangThai: "Chốt deal",      rm: "Nguyễn Văn A",  ngayTao: "15/05/2025", avatarBg: "#be123c", avatar: "DK", aiScore: 93, giaTriDeal: "85tr",    lastContact: 1  },
 ];
 
 const SUMMARY_STATS = [
@@ -325,6 +328,219 @@ function AiLeadsBanner() {
   );
 }
 
+// ── AI Score ring ────────────────────────────────────────────────────────────
+function AiScoreRing({ score }: { score: number }) {
+  const color = score >= 80 ? "#16a34a" : score >= 60 ? "#d97706" : "#dc2626";
+  const deg = Math.round((score / 100) * 360);
+  return (
+    <div className="flex items-center justify-center">
+      <div style={{ width: 34, height: 34, borderRadius: "50%", background: `conic-gradient(${color} ${deg}deg, #eef0f5 0)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color }}>{score}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Thêm KH bằng AI modal ─────────────────────────────────────────────────────
+const AI_PROSPECT_SUGGESTIONS = [
+  { name: "Nguyễn Bảo Châu", phone: "0912 888 001", sanPham: "Vay mua nhà", matchPct: 94, reason: "Thu nhập ổn định, lịch sử tín dụng tốt, tìm kiếm BĐS Q.7 gần đây", avatarBg: "#2563eb" },
+  { name: "Trần Minh Quân",   phone: "0988 777 002", sanPham: "Thẻ tín dụng Visa", matchPct: 87, reason: "Chi tiêu online cao, không có thẻ ACB, profile trẻ 28 tuổi", avatarBg: "#7c3aed" },
+  { name: "Lê Thị Thu Hà",   phone: "0901 555 003", sanPham: "CASA + Payroll",    matchPct: 82, reason: "Công ty đối tác mới ký MOU, nhân sự cấp trung, chưa có CASA ACB", avatarBg: "#0d9488" },
+];
+
+function ThemKHbyAIModal({ onClose }: { onClose: () => void }) {
+  const [phase, setPhase] = useState<"scanning" | "result">("scanning");
+  const [addedIds, setAddedIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setPhase("result"), 2200);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }} onClick={onClose}>
+      <div className="relative rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ background: "#fff", width: "min(500px, 94vw)", border: "1px solid rgba(0,75,154,0.15)" }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center gap-3 px-5 py-4" style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)" }}>
+          <Sparkles size={16} className="text-violet-300 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-white font-bold text-sm">Thêm KH bằng AI</p>
+            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>AI phân tích dữ liệu để gợi ý khách hàng tiềm năng phù hợp nhất</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/20 flex-shrink-0" style={{ background: "rgba(255,255,255,0.1)", color: "#fff" }}>
+            <X size={13} />
+          </button>
+        </div>
+
+        <div className="p-5">
+          {phase === "scanning" ? (
+            <div className="flex flex-col items-center py-8 gap-4">
+              <div className="relative w-16 h-16">
+                <div className="absolute inset-0 rounded-full border-4 border-violet-100" />
+                <div className="absolute inset-0 rounded-full border-4 border-t-violet-600 border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+                <div className="absolute inset-2 rounded-full flex items-center justify-center" style={{ background: "#ede9fe" }}>
+                  <Brain size={20} style={{ color: "#7c3aed" }} />
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold" style={{ color: "#0d1b2a" }}>AI đang phân tích dữ liệu...</p>
+                <p className="text-xs mt-1" style={{ color: "#9ca3af" }}>Đang quét 1,240 KH và matching với profile RM</p>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-1.5">
+                <div className="h-1.5 rounded-full bg-violet-500" style={{ width: "65%", transition: "width 2s ease" }} />
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle2 size={14} style={{ color: "#16a34a" }} />
+                <p className="text-xs font-semibold" style={{ color: "#16a34a" }}>AI đã tìm thấy 3 KH tiềm năng cao nhất cho bạn</p>
+              </div>
+              <div className="space-y-3">
+                {AI_PROSPECT_SUGGESTIONS.map((s, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl border" style={{ borderColor: "rgba(0,75,154,0.1)", background: "#f8faff" }}>
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0" style={{ background: s.avatarBg, fontSize: 11 }}>
+                      {s.name.split(" ").map(w => w[0]).slice(-2).join("")}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-semibold" style={{ color: "#0d1b2a" }}>{s.name}</p>
+                        <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: "#dcfce7", color: "#16a34a" }}>{s.matchPct}% match</span>
+                      </div>
+                      <p className="text-xs mt-0.5" style={{ color: "#9ca3af" }}>{s.phone} · {s.sanPham}</p>
+                      <p className="text-xs mt-1" style={{ color: "#6b7a95" }}><span className="font-medium" style={{ color: "#7c3aed" }}>AI: </span>{s.reason}</p>
+                    </div>
+                    <button
+                      onClick={() => setAddedIds(ids => ids.includes(i) ? ids : [...ids, i])}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0 transition-all"
+                      style={{ background: addedIds.includes(i) ? "#dcfce7" : "#004b9a", color: addedIds.includes(i) ? "#16a34a" : "#fff" }}
+                    >
+                      {addedIds.includes(i) ? "✓ Đã thêm" : "Thêm"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button onClick={onClose} className="mt-4 w-full py-2.5 rounded-xl text-sm font-semibold" style={{ background: "#f1f5f9", color: "#374151" }}>
+                Đóng
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Kanban view ───────────────────────────────────────────────────────────────
+const KANBAN_COLS = ["Mới", "Đang tiếp cận", "Quan tâm", "Chốt deal"] as const;
+type KanbanStatus = typeof KANBAN_COLS[number];
+
+function KanbanView({ leads: initialLeads, onSelectLead }: { leads: TableLead[]; onSelectLead: (l: TableLead) => void }) {
+  const [colLeads, setColLeads] = useState<Record<KanbanStatus, TableLead[]>>(() => {
+    const map: Record<KanbanStatus, TableLead[]> = { "Mới": [], "Đang tiếp cận": [], "Quan tâm": [], "Chốt deal": [] };
+    initialLeads.forEach(l => { if (map[l.trangThai as KanbanStatus]) map[l.trangThai as KanbanStatus].push(l); });
+    return map;
+  });
+  const dragLead = useRef<{ lead: TableLead; fromCol: KanbanStatus } | null>(null);
+  const [dragOver, setDragOver] = useState<KanbanStatus | null>(null);
+
+  const handleDragStart = (lead: TableLead, fromCol: KanbanStatus) => {
+    dragLead.current = { lead, fromCol };
+  };
+  const handleDrop = (toCol: KanbanStatus) => {
+    if (!dragLead.current || dragLead.current.fromCol === toCol) { setDragOver(null); return; }
+    const { lead, fromCol } = dragLead.current;
+    setColLeads(prev => ({
+      ...prev,
+      [fromCol]: prev[fromCol].filter(l => l.id !== lead.id),
+      [toCol]: [...prev[toCol], { ...lead, trangThai: toCol }],
+    }));
+    dragLead.current = null;
+    setDragOver(null);
+  };
+
+  const COL_COLOR: Record<KanbanStatus, string> = { "Mới": "#6b7280", "Đang tiếp cận": "#d97706", "Quan tâm": "#0891b2", "Chốt deal": "#16a34a" };
+
+  return (
+    <div className="overflow-x-auto pb-2">
+      <div className="flex gap-4" style={{ minWidth: 760 }}>
+        {KANBAN_COLS.map(col => {
+          const cards = colLeads[col];
+          const totalVal = cards.length;
+          const color = COL_COLOR[col];
+          const statusCfg = TRANGTHAI_CONFIG[col];
+          return (
+            <div
+              key={col}
+              onDragOver={e => { e.preventDefault(); setDragOver(col); }}
+              onDragLeave={() => setDragOver(null)}
+              onDrop={() => handleDrop(col)}
+              className="flex-1 rounded-xl flex flex-col gap-2.5"
+              style={{ minWidth: 175, background: dragOver === col ? color + "18" : "#f7f9fc", padding: 12, border: `2px dashed ${dragOver === col ? color : "transparent"}`, transition: "all 0.15s" }}
+            >
+              {/* Column header */}
+              <div className="flex items-center gap-2 px-1 pb-1">
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                <span className="text-xs font-bold" style={{ color: "#3a4256" }}>{col}</span>
+                <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: statusCfg.bg, color }}>{cards.length}</span>
+                <div className="flex-1" />
+                <span className="text-xs font-semibold" style={{ color: "#9ca3af" }}>{totalVal} leads</span>
+              </div>
+
+              {/* Cards */}
+              {cards.map(l => {
+                const nguonCfg = NGUON_CONFIG[l.nguon] ?? { color: "#6b7280", bg: "#f1f5f9" };
+                const over48 = l.lastContact > 48;
+                return (
+                  <div
+                    key={l.id}
+                    draggable
+                    onDragStart={() => handleDragStart(l, col)}
+                    onClick={() => onSelectLead(l)}
+                    className="rounded-xl p-3 cursor-grab select-none"
+                    style={{ background: "#fff", border: "1px solid #e6e9f0", boxShadow: "0 1px 3px rgba(16,28,56,0.05)" }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0" style={{ background: l.avatarBg, fontSize: 10 }}>
+                        {l.avatar}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs font-semibold truncate" style={{ color: "#0e1c38" }}>{l.name}</p>
+                          {over48 && <span title="Quá 48h chưa tiếp cận" className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: "#e0463a", animation: "acbPulse 1.6s infinite" }} />}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs mb-2.5" style={{ color: "#8a93a6" }}>{l.sanPham}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ background: nguonCfg.bg, color: nguonCfg.color, maxWidth: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {l.nguon.replace("Campaign ", "").replace("Social ", "")}
+                      </span>
+                      <span className="text-xs font-bold" style={{ color: "#0e1c38" }}>{l.giaTriDeal}</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs" style={{ color: "#9ca3af" }}>AI</span>
+                      <AiScoreRing score={l.aiScore} />
+                    </div>
+                  </div>
+                );
+              })}
+
+              {cards.length === 0 && (
+                <div className="flex-1 rounded-xl flex items-center justify-center py-6" style={{ border: "1.5px dashed #d1d5db" }}>
+                  <p className="text-xs" style={{ color: "#c4cbd8" }}>Kéo card vào đây</p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Tab 1: Cơ hội bán hàng (table view) ───────────────────────────────────────
 function LeadsTab() {
   const [nguonFilter, setNguonFilter] = useState("Tất cả nguồn");
@@ -334,6 +550,8 @@ function LeadsTab() {
   const [page, setPage] = useState(1);
   const [selectedRow, setSelectedRow] = useState<TableLead | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
 
   const filtered = TABLE_LEADS.filter(l => {
     const matchNguon = nguonFilter === "Tất cả nguồn" || l.nguon.toLowerCase().includes(nguonFilter.toLowerCase().replace("tất cả nguồn", ""));
@@ -368,16 +586,36 @@ function LeadsTab() {
 
       {/* Filters row */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
+        {/* View toggle */}
+        <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: "rgba(0,75,154,0.2)" }}>
+          <button
+            onClick={() => setViewMode("table")}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all"
+            style={{ background: viewMode === "table" ? "#004b9a" : "#fff", color: viewMode === "table" ? "#fff" : "#6b7a95" }}
+          >
+            <List size={13} /> Bảng
+          </button>
+          <button
+            onClick={() => setViewMode("kanban")}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all border-l"
+            style={{ background: viewMode === "kanban" ? "#004b9a" : "#fff", color: viewMode === "kanban" ? "#fff" : "#6b7a95", borderColor: "rgba(0,75,154,0.2)" }}
+          >
+            <LayoutGrid size={13} /> Kanban
+          </button>
+        </div>
+
+        <div className="w-px h-5 flex-shrink-0" style={{ background: "rgba(0,75,154,0.15)" }} />
+
         <FilterDropdown value={nguonFilter} options={NGUON_OPTIONS} onChange={(v) => { setNguonFilter(v); setPage(1); }} />
         <FilterDropdown value={trangThaiFilter} options={TRANGTHAI_OPTIONS} onChange={(v) => { setTrangThaiFilter(v); setPage(1); }} />
         <FilterDropdown value={sanPhamFilter} options={SANPHAM_OPTIONS} onChange={(v) => { setSanPhamFilter(v); setPage(1); }} />
 
         {/* Search */}
-        <div className="flex-1 relative" style={{ minWidth: 220 }}>
+        <div className="flex-1 relative" style={{ minWidth: 180 }}>
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#9ca3af" }} />
           <input
             type="text"
-            placeholder="Tìm kiếm khách hàng, SĐT, email..."
+            placeholder="Tìm kiếm khách hàng, SĐT..."
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
             className="w-full pl-9 pr-3 py-1.5 rounded-lg text-xs border outline-none"
@@ -387,16 +625,31 @@ function LeadsTab() {
 
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90 flex-shrink-0"
-          style={{ background: "linear-gradient(135deg, #002d6e 0%, #004b9a 100%)", color: "#fff" }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90 flex-shrink-0 border"
+          style={{ background: "#fff", color: "#004b9a", borderColor: "rgba(0,75,154,0.3)" }}
         >
-          <Plus size={13} /> Thêm cơ hội
+          <Plus size={13} /> Thêm nhanh
+        </button>
+
+        <button
+          onClick={() => setShowAIModal(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90 flex-shrink-0"
+          style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%)", color: "#fff" }}
+        >
+          <Sparkles size={13} /> Thêm KH bằng AI
         </button>
       </div>
 
       {showModal && <ThemCoHoiModal onClose={() => setShowModal(false)} />}
+      {showAIModal && <ThemKHbyAIModal onClose={() => setShowAIModal(false)} />}
 
-      {/* Table */}
+      {/* Kanban view */}
+      {viewMode === "kanban" && (
+        <KanbanView leads={filtered} onSelectLead={l => setSelectedRow(l)} />
+      )}
+
+      {/* Table view */}
+      {viewMode === "table" && (
       <div className="rounded-xl border overflow-hidden" style={{ background: "#fff", borderColor: "rgba(0,75,154,0.1)" }}>
         {/* Header */}
         <div
@@ -405,15 +658,16 @@ function LeadsTab() {
             background: "#f8fafc",
             borderBottom: "1px solid rgba(0,75,154,0.08)",
             color: "#6b7a95",
-            gridTemplateColumns: "2fr 1.6fr 1.5fr 1.2fr 1.3fr 1fr 32px",
-            gap: "12px",
+            gridTemplateColumns: "2fr 1.4fr 1.4fr 1.1fr 56px 80px 1fr 32px",
+            gap: "10px",
           }}
         >
           <span>KHÁCH HÀNG</span>
           <span>NGUỒN</span>
-          <span>SẢN PHẨM QUAN TẦM</span>
+          <span>SẢN PHẨM</span>
           <span>TRẠNG THÁI</span>
-          <span>RM PHỤ TRÁCH</span>
+          <span className="text-center">AI SCORE</span>
+          <span className="text-right">GIÁ TRỊ</span>
           <span>NGÀY TẠO</span>
           <span />
         </div>
@@ -427,33 +681,33 @@ function LeadsTab() {
           ) : pageLeads.map(l => {
             const nguonCfg = NGUON_CONFIG[l.nguon] ?? { color: "#6b7280", bg: "#f1f5f9" };
             const statusCfg = TRANGTHAI_CONFIG[l.trangThai];
+            const over48 = l.lastContact > 48;
             return (
               <div
                 key={l.id}
                 className="grid items-center px-4 py-3 cursor-pointer hover:bg-blue-50/40 transition-colors"
-                style={{ gridTemplateColumns: "2fr 1.6fr 1.5fr 1.2fr 1.3fr 1fr 32px", gap: "12px" }}
+                style={{ gridTemplateColumns: "2fr 1.4fr 1.4fr 1.1fr 56px 80px 1fr 32px", gap: "10px" }}
                 onClick={() => setSelectedRow(l)}
               >
                 {/* Khách hàng */}
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
-                    style={{ background: l.avatarBg, fontSize: 11 }}
-                  >
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0" style={{ background: l.avatarBg, fontSize: 11 }}>
                     {l.avatar}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{ color: "#0d1b2a" }}>{l.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-semibold truncate" style={{ color: "#0d1b2a" }}>{l.name}</p>
+                      {over48 && (
+                        <span title="Quá 48h chưa tiếp cận" className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: "#e0463a", boxShadow: "0 0 0 0 rgba(224,70,58,0.4)", animation: "acbPulse 1.6s infinite" }} />
+                      )}
+                    </div>
                     <p className="text-xs" style={{ color: "#9ca3af" }}>{l.phone}</p>
                   </div>
                 </div>
 
                 {/* Nguồn */}
                 <div>
-                  <span
-                    className="inline-flex items-center text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{ background: nguonCfg.bg, color: nguonCfg.color, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                  >
+                  <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: nguonCfg.bg, color: nguonCfg.color, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {l.nguon}
                   </span>
                 </div>
@@ -462,15 +716,15 @@ function LeadsTab() {
                 <p className="text-xs truncate" style={{ color: "#374151" }}>{l.sanPham}</p>
 
                 {/* Trạng thái */}
-                <span
-                  className="inline-block text-xs px-2.5 py-1 rounded-full font-medium"
-                  style={{ background: statusCfg.bg, color: statusCfg.color }}
-                >
+                <span className="inline-block text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: statusCfg.bg, color: statusCfg.color }}>
                   {l.trangThai}
                 </span>
 
-                {/* RM */}
-                <p className="text-xs truncate" style={{ color: "#374151" }}>{l.rm}</p>
+                {/* AI Score ring */}
+                <AiScoreRing score={l.aiScore} />
+
+                {/* Giá trị */}
+                <p className="text-xs font-semibold text-right" style={{ color: "#0d1b2a" }}>{l.giaTriDeal}</p>
 
                 {/* Ngày tạo */}
                 <p className="text-xs" style={{ color: "#9ca3af" }}>{l.ngayTao}</p>
@@ -512,6 +766,7 @@ function LeadsTab() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Detail slide-out – maps to a real lead for rich panel */}
       {selectedRow && (() => {
@@ -1130,7 +1385,7 @@ function CampaignVungModal({ name, etlDt, onClose }: { name: string; etlDt: stri
                 <td colSpan={2} className="px-3 py-2.5 font-bold text-white text-center border-r" style={{ borderColor: "rgba(255,255,255,0.15)" }}>
                   {etlDt} – Tổng
                 </td>
-                {(["phatSinh","suyGiam","duNo","bl","ttqt","goiPhi","banGoi"] as const).map((k, i) => (
+                {(["phatSinh","suyGiam","duNo","bl","ttqt","goiPhi","banGoi"] as const).map((k) => (
                   <td key={k} className="px-2 py-2.5 text-center font-bold text-white border-r" style={{ borderColor: "rgba(255,255,255,0.15)" }}>{tot(k).toLocaleString("vi-VN") || "–"}</td>
                 ))}
                 <td className="px-2 py-2.5 text-center font-bold border-r" style={{ color: "#93c5fd", borderColor: "rgba(255,255,255,0.2)" }}>{tot("phanBo").toLocaleString("vi-VN")}</td>
