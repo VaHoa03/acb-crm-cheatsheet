@@ -4,7 +4,7 @@ import {
   Megaphone, Search, ChevronDown, BarChart2, Brain, AlertTriangle,
   CheckCircle2, TrendingDown, Lightbulb, RefreshCw, ArrowRight, X,
   Calendar, Sparkles, Building2, MapPin, Layers3, ExternalLink,
-  Info, LayoutGrid, List, Activity,
+  Info, LayoutGrid, List, Activity, CreditCard, Upload, ScanLine,
 } from "lucide-react";
 import {
   campaigns, leads, formatVal, campaignSourceColors, type Lead, type Campaign,
@@ -344,89 +344,283 @@ function AiScoreRing({ score }: { score: number }) {
 }
 
 // ── Thêm KH bằng AI modal ─────────────────────────────────────────────────────
-const AI_PROSPECT_SUGGESTIONS = [
-  { name: "Nguyễn Bảo Châu", phone: "0912 888 001", sanPham: "Vay mua nhà", matchPct: 94, reason: "Thu nhập ổn định, lịch sử tín dụng tốt, tìm kiếm BĐS Q.7 gần đây", avatarBg: "#2563eb" },
-  { name: "Trần Minh Quân",   phone: "0988 777 002", sanPham: "Thẻ tín dụng Visa", matchPct: 87, reason: "Chi tiêu online cao, không có thẻ ACB, profile trẻ 28 tuổi", avatarBg: "#7c3aed" },
-  { name: "Lê Thị Thu Hà",   phone: "0901 555 003", sanPham: "CASA + Payroll",    matchPct: 82, reason: "Công ty đối tác mới ký MOU, nhân sự cấp trung, chưa có CASA ACB", avatarBg: "#0d9488" },
+// ── Thêm KH bằng AI modal (matching ACB Next CRM design) ─────────────────────
+const OCR_FIELDS = [
+  { label: "Họ và tên",          value: "Trần Thị Lan",                hint: "Chờ quét CCCD…" },
+  { label: "Số CCCD",            value: "079295012384",                hint: "Chờ quét CCCD…" },
+  { label: "Ngày sinh",          value: "15/08/1992",                  hint: "Chờ quét CCCD…" },
+  { label: "Giới tính",          value: "Nữ",                          hint: "Chờ quét CCCD…" },
+  { label: "Địa chỉ thường trú", value: "P.12, Q.Bình Thạnh, TP.HCM", hint: "Chờ quét CCCD…" },
+  { label: "Ngày cấp CCCD",      value: "20/03/2021",                  hint: "Chờ quét CCCD…" },
+];
+
+const PROSPECT_METHODS = [
+  { id: "ocr",    Icon: ScanLine, color: "#0b8a98", label: "Quét CCCD / CMND",     desc: "AI tự động trích xuất thông tin từ ảnh chụp" },
+  { id: "upload", Icon: Upload,   color: "#3b5fe6", label: "Tải ảnh / file lên",    desc: "Hỗ trợ JPG, PNG, PDF — AI đọc và điền form" },
+  { id: "manual", Icon: Search,   color: "#7c3aed", label: "Nhập tay / tra cứu CB", desc: "Tìm theo số CCCD trong hệ thống Core Banking" },
 ];
 
 function ThemKHbyAIModal({ onClose }: { onClose: () => void }) {
-  const [phase, setPhase] = useState<"scanning" | "result">("scanning");
-  const [addedIds, setAddedIds] = useState<number[]>([]);
+  const [method, setMethod] = useState<string | null>(null);
+  const [ocrPhase, setOcrPhase] = useState<"idle" | "scanning" | "done">("idle");
+  const [cbPhase, setCbPhase] = useState<"idle" | "checking" | "found" | "claimed">("idle");
+  const [filled, setFilled] = useState(false);
+  const [sdt, setSdt] = useState("");
+  const [sanPham, setSanPham] = useState("");
+  const [manualCCCD, setManualCCCD] = useState("");
 
-  useEffect(() => {
-    const t = setTimeout(() => setPhase("result"), 2200);
-    return () => clearTimeout(t);
-  }, []);
+  const pickMethod = (id: string) => {
+    setMethod(id);
+    setOcrPhase("idle"); setCbPhase("idle"); setFilled(false); setSdt(""); setManualCCCD("");
+  };
+
+  const handleCapture = () => {
+    if (ocrPhase === "scanning") return;
+    setOcrPhase("scanning");
+    setTimeout(() => {
+      setOcrPhase("done");
+      setFilled(true);
+      setTimeout(() => {
+        setCbPhase("checking");
+        setTimeout(() => setCbPhase("found"), 2000);
+      }, 500);
+    }, 2200);
+  };
+
+  const handleManualSearch = () => {
+    if (manualCCCD.length < 9 || cbPhase === "checking") return;
+    setCbPhase("checking");
+    setTimeout(() => setCbPhase("found"), 2000);
+  };
+
+  const canSave = cbPhase === "claimed" || (filled && sdt.length >= 9);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }} onClick={onClose}>
-      <div className="relative rounded-2xl shadow-2xl overflow-hidden flex flex-col" style={{ background: "#fff", width: "min(500px, 94vw)", border: "1px solid rgba(0,75,154,0.15)" }} onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ background: "rgba(10,20,40,0.5)" }} onClick={onClose}>
+      <div className="relative rounded-2xl overflow-hidden flex flex-col" style={{ background: "#f4f6fa", width: "min(1000px, 96vw)", maxHeight: "92vh" }} onClick={e => e.stopPropagation()}>
+
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4" style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)" }}>
-          <Sparkles size={16} className="text-violet-300 flex-shrink-0" />
-          <div className="flex-1">
-            <p className="text-white font-bold text-sm">Thêm KH bằng AI</p>
-            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>AI phân tích dữ liệu để gợi ý khách hàng tiềm năng phù hợp nhất</p>
+        <div className="flex items-center gap-3 px-5 py-4 flex-shrink-0" style={{ background: "#fff", borderBottom: "1px solid #eef0f5" }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg,#0b3f8f,#0b8a98)" }}>
+            <Sparkles size={18} style={{ color: "#fff" }} />
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/20 flex-shrink-0" style={{ background: "rgba(255,255,255,0.1)", color: "#fff" }}>
-            <X size={13} />
+          <div className="flex-1">
+            <p className="font-bold" style={{ color: "#0e1c38", fontSize: 15 }}>Thêm khách hàng bằng AI</p>
+            <p className="text-xs mt-0.5" style={{ color: "#939cb0" }}>AI trích xuất &amp; điền sẵn · RM review trước khi lưu</p>
+          </div>
+          <span className="text-xs font-bold px-3 py-1.5 rounded-full flex-shrink-0" style={{ color: "#a85d09", background: "#fdf1de", letterSpacing: "0.4px" }}>
+            REVIEW TRƯỚC KHI LƯU
+          </span>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#f1f3f8", color: "#5a6478" }}>
+            <X size={15} />
           </button>
         </div>
 
-        <div className="p-5">
-          {phase === "scanning" ? (
-            <div className="flex flex-col items-center py-8 gap-4">
-              <div className="relative w-16 h-16">
-                <div className="absolute inset-0 rounded-full border-4 border-violet-100" />
-                <div className="absolute inset-0 rounded-full border-4 border-t-violet-600 border-r-transparent border-b-transparent border-l-transparent animate-spin" />
-                <div className="absolute inset-2 rounded-full flex items-center justify-center" style={{ background: "#ede9fe" }}>
-                  <Brain size={20} style={{ color: "#7c3aed" }} />
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 p-5">
+          {/* Method picker */}
+          <p className="text-xs font-semibold mb-2.5 uppercase tracking-wide" style={{ color: "#8a93a6" }}>Phương thức nhập</p>
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            {PROSPECT_METHODS.map(({ id, Icon, color, label, desc }) => (
+              <button
+                key={id}
+                onClick={() => pickMethod(id)}
+                className="relative text-left rounded-xl p-4 border-2 transition-all"
+                style={{ background: "#fff", borderColor: method === id ? color : "#e6e9f0" }}
+              >
+                {method === id && (
+                  <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: color }}>
+                    <CheckCircle2 size={12} style={{ color: "#fff" }} />
+                  </div>
+                )}
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-3" style={{ background: color + "18" }}>
+                  <Icon size={18} style={{ color }} />
                 </div>
+                <p className="font-bold text-sm" style={{ color: "#0e1c38" }}>{label}</p>
+                <p className="text-xs mt-1" style={{ color: "#939cb0", lineHeight: 1.4 }}>{desc}</p>
+              </button>
+            ))}
+          </div>
+
+          {/* 2-column layout after method selected */}
+          {method && (
+            <div className="grid gap-4" style={{ gridTemplateColumns: "360px 1fr" }}>
+
+              {/* ── Left: capture area ── */}
+              <div className="flex flex-col gap-3">
+                {method !== "manual" ? (
+                  <>
+                    {/* CCCD image placeholder */}
+                    <div className="relative rounded-xl overflow-hidden border" style={{ border: "1px solid #e6e9f0", aspectRatio: "16/10", background: "repeating-linear-gradient(135deg,#eef1f6,#eef1f6 10px,#e7ebf2 10px,#e7ebf2 20px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {ocrPhase === "done" ? (
+                        <div className="absolute inset-0 flex items-center justify-center" style={{ background: "#0b2a52" }}>
+                          <div className="text-center" style={{ color: "rgba(255,255,255,0.7)" }}>
+                            <CreditCard size={40} />
+                            <p style={{ fontSize: 10, fontFamily: "monospace", marginTop: 6 }}>CCCD ĐÃ ĐỌC THÀNH CÔNG</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center" style={{ color: "#9aa3b5" }}>
+                          <CreditCard size={40} />
+                          <p style={{ fontSize: 11, fontFamily: "monospace", marginTop: 6 }}>ẢNH CCCD (mặt trước)</p>
+                        </div>
+                      )}
+                      {/* OCR status badge */}
+                      <div className="absolute left-2.5 bottom-2.5 flex items-center gap-1.5 text-white text-xs font-semibold px-2.5 py-1.5 rounded-full"
+                        style={{ background: ocrPhase === "scanning" ? "#0b8a98" : ocrPhase === "done" ? "#16a34a" : "#475569" }}>
+                        {ocrPhase === "scanning" && <span className="w-1.5 h-1.5 rounded-full bg-white flex-shrink-0" style={{ animation: "acbPulse 1s infinite" }} />}
+                        {ocrPhase === "idle" ? "Chưa có ảnh" : ocrPhase === "scanning" ? "Đang quét OCR…" : "✓ Đã trích xuất"}
+                      </div>
+                    </div>
+
+                    {/* Capture buttons */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleCapture}
+                        disabled={ocrPhase === "scanning"}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                        style={{ background: "#0e1c38", color: "#fff", opacity: ocrPhase === "scanning" ? 0.6 : 1 }}
+                      >
+                        <ScanLine size={15} /> {ocrPhase === "scanning" ? "Đang quét…" : "Chụp / Quét"}
+                      </button>
+                      <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border" style={{ background: "#fff", color: "#3a4256", borderColor: "#dde2ec" }}>
+                        <Upload size={15} /> Tải file
+                      </button>
+                    </div>
+
+                    {/* OCR success note */}
+                    {filled && (
+                      <div className="flex items-start gap-2.5 rounded-xl p-3" style={{ background: "#f0fbfd", border: "1px solid #bfe6ec" }}>
+                        <CheckCircle2 size={15} style={{ color: "#0b8a98", flexShrink: 0, marginTop: 1 }} />
+                        <p className="text-xs" style={{ color: "#08434a", lineHeight: 1.5 }}>
+                          AI đã trích xuất thành công <strong>6 trường dữ liệu</strong> từ CCCD. Các trường có <span style={{ color: "#0b8a98" }}>✦</span> cần bạn kiểm tra trước khi lưu.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  /* Manual: CCCD input + search */
+                  <div className="flex flex-col gap-3">
+                    <p className="text-xs font-semibold" style={{ color: "#5a6478" }}>Nhập số CCCD / CMND để tra cứu</p>
+                    <div className="flex gap-2">
+                      <input
+                        value={manualCCCD}
+                        onChange={e => { setManualCCCD(e.target.value); setCbPhase("idle"); }}
+                        placeholder="VD: 079295012384"
+                        className="flex-1 px-3 py-2.5 rounded-xl text-sm border outline-none"
+                        style={{ borderColor: "rgba(0,75,154,0.2)", background: "#fff" }}
+                      />
+                      <button onClick={handleManualSearch} className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all" style={{ background: manualCCCD.length >= 9 ? "#003087" : "#e5e7eb", color: manualCCCD.length >= 9 ? "#fff" : "#9ca3af" }}>
+                        <Search size={14} />
+                      </button>
+                    </div>
+                    <div className="rounded-xl p-3" style={{ background: "#f7f9fc", border: "1px solid #e6e9f0" }}>
+                      <p className="text-xs font-semibold mb-1" style={{ color: "#5a6478" }}>Hướng dẫn</p>
+                      <p className="text-xs" style={{ color: "#939cb0", lineHeight: 1.5 }}>Nhập đúng số CCCD 12 chữ số (hoặc CMND 9 số). Hệ thống sẽ tra cứu Core Banking và hiển thị thông tin nếu KH đã có CIF tại ACB.</p>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="text-center">
-                <p className="text-sm font-semibold" style={{ color: "#0d1b2a" }}>AI đang phân tích dữ liệu...</p>
-                <p className="text-xs mt-1" style={{ color: "#9ca3af" }}>Đang quét 1,240 KH và matching với profile RM</p>
-              </div>
-              <div className="w-full bg-gray-100 rounded-full h-1.5">
-                <div className="h-1.5 rounded-full bg-violet-500" style={{ width: "65%", transition: "width 2s ease" }} />
+
+              {/* ── Right: form ── */}
+              <div>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  {OCR_FIELDS.map((f, i) => (
+                    <div key={i}>
+                      <div className="flex items-center gap-1.5 text-xs font-semibold mb-1.5" style={{ color: "#5a6478" }}>
+                        {f.label}
+                        {filled && <span style={{ color: "#0b8a98", fontSize: 11 }}>✦</span>}
+                      </div>
+                      <div className="px-3 py-2.5 rounded-xl text-sm"
+                        style={{
+                          border: `1.5px ${filled ? "solid" : "dashed"} ${filled ? "#bfe6ec" : "#c9d2e2"}`,
+                          background: filled ? "#f0fbfd" : "#fff",
+                          color: filled ? "#0e1c38" : "#b3bccb",
+                          fontWeight: filled ? 500 : 400,
+                        }}>
+                        {filled ? f.value : f.hint}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* SĐT – manual always */}
+                  <div>
+                    <p className="text-xs font-semibold mb-1.5" style={{ color: "#5a6478" }}>Số điện thoại <span style={{ color: "#dc2626" }}>*</span></p>
+                    <input
+                      value={sdt}
+                      onChange={e => setSdt(e.target.value)}
+                      placeholder="OCR không lấy được — nhập tay"
+                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                      style={{ border: "1.5px dashed #c9d2e2", background: "#fff" }}
+                    />
+                  </div>
+
+                  {/* Sản phẩm */}
+                  <div>
+                    <p className="text-xs font-semibold mb-1.5" style={{ color: "#5a6478" }}>Sản phẩm quan tâm</p>
+                    <select value={sanPham} onChange={e => setSanPham(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                      style={{ border: "1.5px dashed #c9d2e2", background: "#fff", color: sanPham ? "#0e1c38" : "#b3bccb" }}>
+                      <option value="">Chọn sản phẩm…</option>
+                      {["Vay mua nhà","Tiết kiệm","Thẻ tín dụng","Bảo hiểm","Đầu tư","CASA","Payroll"].map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Core Banking banners */}
+                {cbPhase === "checking" && (
+                  <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-medium" style={{ background: "#eef3fb", border: "1px solid #d8e2f4", color: "#003087" }}>
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: "#003087", animation: "acbPulse 1s infinite" }} />
+                    Đang tra cứu Core Banking theo số CCCD…
+                  </div>
+                )}
+                {cbPhase === "found" && (
+                  <div className="rounded-xl p-4" style={{ background: "#fdf3e0", border: "1px solid #f0d9a8" }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Search size={16} style={{ color: "#a85d09" }} />
+                      <span className="font-bold text-sm" style={{ color: "#8a5a09" }}>
+                        Đã tìm thấy trong Core Banking · <span style={{ color: "#c0392b" }}>CHƯA THUỘC RM NÀO</span>
+                      </span>
+                    </div>
+                    <p className="text-xs mb-3" style={{ color: "#8a6a30", lineHeight: 1.6 }}>
+                      CIF <strong>00441287</strong> · mở tài khoản năm <strong>2021</strong> · kiểm tra trong <strong>2.1s</strong><br />
+                      Bạn có muốn nhận chăm sóc khách hàng này không?
+                    </p>
+                    <div className="flex gap-2">
+                      <button onClick={() => setCbPhase("claimed")} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold" style={{ background: "#003087", color: "#fff" }}>
+                        <CheckCircle2 size={14} /> Nhận chăm sóc
+                      </button>
+                      <button className="px-4 py-2 rounded-xl text-sm font-semibold border" style={{ background: "#fff", color: "#8a5a09", borderColor: "#eccd8d" }}>
+                        Để sau
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {cbPhase === "claimed" && (
+                  <div className="flex items-center gap-2.5 rounded-xl px-4 py-3" style={{ background: "#e8f6ee", border: "1px solid #b6e0c6" }}>
+                    <CheckCircle2 size={17} style={{ color: "#15803d", flexShrink: 0 }} />
+                    <p className="text-xs" style={{ color: "#0f6b38", lineHeight: 1.5 }}>
+                      <strong>Đã nhận chăm sóc.</strong> Trần Thị Lan (CIF 00441287) được gán cho bạn và đồng bộ vào pipeline.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-          ) : (
-            <>
-              <div className="flex items-center gap-2 mb-4">
-                <CheckCircle2 size={14} style={{ color: "#16a34a" }} />
-                <p className="text-xs font-semibold" style={{ color: "#16a34a" }}>AI đã tìm thấy 3 KH tiềm năng cao nhất cho bạn</p>
-              </div>
-              <div className="space-y-3">
-                {AI_PROSPECT_SUGGESTIONS.map((s, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl border" style={{ borderColor: "rgba(0,75,154,0.1)", background: "#f8faff" }}>
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0" style={{ background: s.avatarBg, fontSize: 11 }}>
-                      {s.name.split(" ").map(w => w[0]).slice(-2).join("")}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-semibold" style={{ color: "#0d1b2a" }}>{s.name}</p>
-                        <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: "#dcfce7", color: "#16a34a" }}>{s.matchPct}% match</span>
-                      </div>
-                      <p className="text-xs mt-0.5" style={{ color: "#9ca3af" }}>{s.phone} · {s.sanPham}</p>
-                      <p className="text-xs mt-1" style={{ color: "#6b7a95" }}><span className="font-medium" style={{ color: "#7c3aed" }}>AI: </span>{s.reason}</p>
-                    </div>
-                    <button
-                      onClick={() => setAddedIds(ids => ids.includes(i) ? ids : [...ids, i])}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0 transition-all"
-                      style={{ background: addedIds.includes(i) ? "#dcfce7" : "#004b9a", color: addedIds.includes(i) ? "#16a34a" : "#fff" }}
-                    >
-                      {addedIds.includes(i) ? "✓ Đã thêm" : "Thêm"}
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <button onClick={onClose} className="mt-4 w-full py-2.5 rounded-xl text-sm font-semibold" style={{ background: "#f1f5f9", color: "#374151" }}>
-                Đóng
-              </button>
-            </>
           )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-2.5 px-5 py-3.5 flex-shrink-0" style={{ background: "#fff", borderTop: "1px solid #eef0f5" }}>
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl text-sm font-semibold border" style={{ background: "#fff", color: "#5a6478", borderColor: "#e6e9f0" }}>
+            Hủy
+          </button>
+          <button
+            onClick={() => { if (canSave) onClose(); }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            style={{ background: canSave ? "#003087" : "#e5e7eb", color: canSave ? "#fff" : "#9ca3af" }}
+          >
+            <CheckCircle2 size={14} />
+            {cbPhase === "claimed" ? "Đã lưu vào pipeline" : "Lưu khách hàng"}
+          </button>
         </div>
       </div>
     </div>
